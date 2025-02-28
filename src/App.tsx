@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons/Hamburger";
 import { CloseIcon } from "@chakra-ui/icons/Close";
+import { Link, Route, Routes } from "react-router-dom";
 
 function TitleBar(props: { open: boolean; onToggle: () => void }) {
   const { open, onToggle } = props;
@@ -43,29 +44,75 @@ function SideMenu({ open, onToggle }: { open: boolean; onToggle: () => void }) {
       overflow="hidden"
     >
       <VStack align="stretch" gap={2} p={4}>
-        <Button variant="ghost" onClick={onToggle}>
-          Dashboard
+        <Button variant="ghost" onClick={onToggle} asChild>
+          <Link to="/dashboard">Dashboard</Link>
         </Button>
-        <Button variant="ghost" onClick={onToggle}>
-          Settings
+        <Button variant="ghost" onClick={onToggle} asChild>
+          <Link to="/profile">Profile</Link>
         </Button>
-        <Button variant="ghost" onClick={onToggle}>
-          Profile
+        <Button variant="ghost" onClick={onToggle} asChild>
+          <Link to="/settings">Setting</Link>
         </Button>
       </VStack>
     </Box>
   );
 }
 
-function MainContent(props: { connected: boolean }) {
-  const { connected } = props;
+function Home({ connected }: { connected: boolean }) {
   return (
     <>
       <Heading size="lg" mb={4}>
-        Welcome to My App. We are {connected ? "connected." : "connecting ..."}
+        Welcome to Back Office Ops.
       </Heading>
-      <p>This is the main content area. Add routes or other components here.</p>
+      <p>We are {connected ? "connected." : "connecting ..."}</p>
+      <p>This is the main content area.</p>
     </>
+  );
+}
+
+function Settings() {
+  return (
+    <>
+      <Heading size="lg" mb={4}>
+        Settings
+      </Heading>
+      <p>This is the main settings area.</p>
+    </>
+  );
+}
+
+function Profile() {
+  return (
+    <>
+      <Heading size="lg" mb={4}>
+        Profile
+      </Heading>
+      <p>This is the main profile area.</p>
+    </>
+  );
+}
+
+function NotFoundPage() {
+  return (
+    <>
+      <Heading size="lg" mb={4}>
+        Not Found
+      </Heading>
+      <p>This page does not exist.</p>
+    </>
+  );
+}
+
+function MainContent(props: { connected: boolean }) {
+  const { connected } = props;
+  return (
+    <Routes>
+      <Route path="/" element={<Home connected={connected} />} />
+      <Route path="/dashboard" element={<Home connected={connected} />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 
