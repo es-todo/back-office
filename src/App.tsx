@@ -1,22 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
-import { Broker } from "./broker.ts";
+import { Broker, initial_broker_state } from "./broker.ts";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
 function App() {
-  const [broker] = useState(new Broker(url));
+  const [broker_state, set_broker_state] = useState(initial_broker_state);
+  const broker = useMemo(
+    () =>
+      new Broker(url, (state) => {
+        console.log(state);
+        set_broker_state(state);
+      }),
+    []
+  );
   useEffect(() => {
-    return () => broker.terminate();
-  }, []);
+    console.log("setting up cleaniup");
+    return () => {
+      console.log("terminating ...");
+      broker.terminate();
+    };
+  }, [broker]);
   const [count, setCount] = useState(0);
 
   return (
     <>
       <div>
+        {broker_state.connected ? "connected" : "connecting ..."}
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>

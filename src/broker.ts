@@ -2,6 +2,9 @@ import * as eio from "engine.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 
+export type broker_state = { connected: boolean };
+export const initial_broker_state: broker_state = { connected: false };
+
 type message =
   | { type: "session"; session_id: string }
   | { type: "syn"; i: number };
@@ -14,9 +17,13 @@ export class Broker {
   private message_queue: message[] = [];
   private sent_messages: message[] = [];
   private syn = 0;
+  private state: broker_state = initial_broker_state;
+  private on_state_change: (state: broker_state) => void;
 
-  constructor(url: string) {
+  constructor(url: string, set_state: (state: broker_state) => void) {
+    console.log(`new broker created`);
     this.url = url;
+    this.on_state_change = set_state;
     this.keep_connection();
   }
 
@@ -43,6 +50,11 @@ export class Broker {
     this.message_queue = [];
   }
 
+  private update_state(state: broker_state) {
+    this.state = state;
+    this.on_state_change(state);
+  }
+
   private keep_connection() {
     if (!this.reconnect) return;
     const connection = new eio.Socket(this.url);
@@ -52,6 +64,7 @@ export class Broker {
       console.log(desc);
       this.connection = undefined;
       setTimeout(() => this.keep_connection(), 100);
+      this.update_state({ ...this.state, connected: false });
     });
 
     connection.on("message", (data) => {
@@ -93,6 +106,7 @@ export class Broker {
       if (this.reconnect) {
         assert(this.connection === undefined);
         this.connection = connection;
+        this.update_state({ ...this.state, connected: true });
         if (this.sent_messages.length > 0) {
           connection.send(JSON.stringify(this.sent_messages));
         }
