@@ -1,7 +1,7 @@
-import { StrictMode } from "react";
+//import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import App from "./App.tsx";
+import { Provider } from "./ui/provider.tsx";
 
 //createRoot(document.getElementById("root")!).render(
 //  <StrictMode>
@@ -9,4 +9,8 @@ import App from "./App.tsx";
 //  </StrictMode>
 //);
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <Provider>
+    <App />
+  </Provider>
+);
