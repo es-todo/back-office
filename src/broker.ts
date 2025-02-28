@@ -12,8 +12,8 @@ export class Broker {
   private connection: eio.Socket | undefined;
   private reconnect = true;
   private message_queue: message[] = [];
+  private sent_messages: message[] = [];
   private syn = 0;
-  private sent_queue: message[] = [];
 
   constructor(url: string) {
     this.url = url;
@@ -35,14 +35,11 @@ export class Broker {
 
   private flush_message_queue() {
     if (!this.connection) return;
-    const ls: message[] = [
-      ...this.sent_queue,
-      ...this.message_queue,
-      { type: "syn", i: this.syn },
-    ];
+    this.message_queue.push({ type: "syn", i: this.syn });
     this.syn += 1;
-    this.connection.send(JSON.stringify(ls));
-    this.sent_queue = ls;
+    console.log(JSON.stringify(this.message_queue));
+    this.connection.send(JSON.stringify(this.message_queue));
+    this.sent_messages = [...this.sent_messages, ...this.message_queue];
     this.message_queue = [];
   }
 
@@ -67,11 +64,22 @@ export class Broker {
         switch (message.type) {
           case "ack": {
             const { i } = message;
-            const idx = this.sent_queue.findIndex(
+            const idx = this.sent_messages.findIndex(
               (x) => x.type === "syn" && x.i === i
             );
             assert(idx >= 0);
-            this.sent_queue.splice(0, idx + 1);
+            this.sent_messages.splice(0, idx + 1);
+            return;
+          }
+          case "syn": {
+            const { i } = message;
+            connection.send(JSON.stringify([{ type: "ack", i }]));
+            return;
+          }
+          case "session": {
+            const { is_new } = message;
+            assert(typeof is_new === "boolean");
+            console.log({ is_new });
             return;
           }
           default:
@@ -85,6 +93,9 @@ export class Broker {
       if (this.reconnect) {
         assert(this.connection === undefined);
         this.connection = connection;
+        if (this.sent_messages.length > 0) {
+          connection.send(JSON.stringify(this.sent_messages));
+        }
         this.send({ type: "session", session_id: this.session_id });
       } else {
         connection.close();
