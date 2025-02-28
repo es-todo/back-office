@@ -16,7 +16,7 @@ import { Link, Route, Routes } from "react-router-dom";
 function TitleBar(props: { open: boolean; onToggle: () => void }) {
   const { open, onToggle } = props;
   return (
-    <Box color="white" py={1} px={1}>
+    <Box bg="bg.subtle" py={1} px={1}>
       <Flex justify="space-between" align="center">
         <Flex align="center" gap={3}>
           <IconButton
@@ -24,7 +24,6 @@ function TitleBar(props: { open: boolean; onToggle: () => void }) {
             variant="outline"
             colorScheme="whiteAlpha"
             onClick={onToggle}
-            display={{ base: "block", md: "none" }} // Hide on desktop if you like
           >
             {open ? <CloseIcon /> : <HamburgerIcon />}
           </IconButton>
@@ -39,9 +38,10 @@ function SideMenu({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   return (
     <Box
       as="nav"
-      width={{ base: open ? "200px" : "0", md: "200px" }}
+      width={{ base: open ? "200px" : "0" }}
       transition="width 0.2s"
       overflow="hidden"
+      bg="bg.subtle"
     >
       <VStack align="stretch" gap={2} p={4}>
         <Button variant="ghost" onClick={onToggle} asChild>
