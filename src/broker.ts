@@ -2,8 +2,15 @@ import * as eio from "engine.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 
-export type broker_state = { connected: boolean };
-export const initial_broker_state: broker_state = { connected: false };
+export type broker_state = {
+  connected: boolean;
+  log_in_status: "logged_in" | "logging_in" | "idle";
+};
+
+export const initial_broker_state: broker_state = {
+  connected: false,
+  log_in_status: "idle",
+};
 
 type message =
   | { type: "session"; session_id: string }
