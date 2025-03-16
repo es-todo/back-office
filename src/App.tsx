@@ -3,36 +3,18 @@ import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideMenu } from "./side-menu.tsx";
 import { MainContent } from "./main-content.tsx";
-import { Box, CssBaseline, Stack, styled, Toolbar } from "@mui/material";
+import {
+  Box,
+  Button,
+  CssBaseline,
+  Modal,
+  Stack,
+  styled,
+  Typography,
+} from "@mui/material";
+import { v4 as uuidv4 } from "uuid";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
-
-const drawerWidth = 240;
-
-const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
-  open?: boolean;
-}>(({ theme }) => ({
-  flexGrow: 1,
-  padding: theme.spacing(3),
-  transition: theme.transitions.create("margin", {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  marginLeft: `-${drawerWidth * 3.8}px`,
-  variants: [
-    {
-      props: ({ open }) => open,
-      style: {
-        transition: theme.transitions.create("margin", {
-          easing: theme.transitions.easing.easeOut,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-        //      marginLeft: 0,
-        marginLeft: `-${drawerWidth * 1.8}px`,
-      },
-    },
-  ],
-}));
 
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -43,30 +25,78 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
+const modalstyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 1,
+};
+
+type command_form = {
+  command_name: string;
+  command_uuid: string;
+};
+
 export function App() {
   const [broker_state, set_broker_state] = useState(initial_broker_state);
   const broker = useMemo(
     () => new Broker(url, (state) => set_broker_state(state)),
     []
   );
+  const [command_forms, set_command_forms] = useState<command_form[]>([]);
+
   useEffect(() => {
     return () => broker.terminate();
   }, [broker]);
   const [open, set_open] = useState(false);
+  const push_command = (command_form: command_form) =>
+    set_command_forms([command_form, ...command_forms]);
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-      <TitleBar open={open} toggle={() => set_open(!open)} />
-      <SideMenu
-        open={open}
-        onToggle={() => set_open(!open)}
-        drawerWidth={drawerWidth}
-      />
-      <Main open={open}>
-        <DrawerHeader />
-        <MainContent connected={broker_state.connected} />
-      </Main>
-    </Box>
+    <>
+      <Modal open={command_forms.length > 0}>
+        <Box sx={modalstyle}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            {command_forms[0]?.command_name ?? null}
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+          </Typography>
+          <Stack
+            direction="row"
+            sx={{ width: "100%" }}
+            justifyContent="flex-end"
+          >
+            <Button onClick={() => set_command_forms(command_forms.slice(1))}>
+              Cancel
+            </Button>
+            <Button>Submit</Button>
+          </Stack>
+        </Box>
+      </Modal>
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
+        <TitleBar open={open} toggle={() => set_open(!open)} />
+        <SideMenu open={open} onToggle={() => set_open(!open)} />
+        <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
+          <DrawerHeader />
+          <Box sx={{ p: 2 }}>
+            <MainContent connected={broker_state.connected} />
+            <Button
+              onClick={() =>
+                push_command({ command_name: "ping", command_uuid: uuidv4() })
+              }
+            >
+              Open modal
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </>
   );
 }

@@ -15,19 +15,18 @@ import { Link } from "react-router-dom";
 export function SideMenu({
   open,
   onToggle,
-  drawerWidth,
 }: {
   open: boolean;
   onToggle: () => void;
-  drawerWidth: number;
 }) {
+  const drawerWidth = 240;
   return (
     <Drawer
       open={open}
       variant="persistent"
       anchor="left"
       sx={{
-        width: drawerWidth,
+        width: open ? drawerWidth : 0,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: drawerWidth,
