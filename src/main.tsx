@@ -1,12 +1,18 @@
 import { createRoot } from "react-dom/client";
 import { App } from "./App.tsx";
-import { Provider } from "./ui/provider.tsx";
 import { BrowserRouter } from "react-router-dom";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
-  <Provider>
+  <ThemeProvider theme={darkTheme}>
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </Provider>
+  </ThemeProvider>
 );

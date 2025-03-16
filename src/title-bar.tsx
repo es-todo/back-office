@@ -1,24 +1,41 @@
-import { Box, Flex, Heading, IconButton } from "@chakra-ui/react";
-import { HamburgerIcon } from "@chakra-ui/icons/Hamburger";
-import { CloseIcon } from "@chakra-ui/icons/Close";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
 
-export function TitleBar(props: { open: boolean; onToggle: () => void }) {
-  const { open, onToggle } = props;
+export function TitleBar({
+  open,
+  toggle,
+}: {
+  open: boolean;
+  toggle: () => void;
+}) {
   return (
-    <Box bg="bg.subtle" py={1} px={1}>
-      <Flex justify="space-between" align="center">
-        <Flex align="center" gap={3}>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
+        <Toolbar>
           <IconButton
-            aria-label="Toggle Menu"
-            variant="outline"
-            colorScheme="whiteAlpha"
-            onClick={onToggle}
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ mr: 2 }}
+            onClick={toggle}
           >
-            {open ? <CloseIcon /> : <HamburgerIcon />}
+            <MenuIcon />
           </IconButton>
-          <Heading size="md">Back Office App</Heading>
-        </Flex>
-      </Flex>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            News
+          </Typography>
+          <Button color="inherit">Login</Button>
+        </Toolbar>
+      </AppBar>
     </Box>
   );
 }

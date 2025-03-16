@@ -1,13 +1,5 @@
-import {
-  Button,
-  CloseButton,
-  Dialog,
-  HStack,
-  Portal,
-  VStack,
-} from "@chakra-ui/react";
-
 export function PopupDialog() {
+  return null;
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>

@@ -1,8 +1,9 @@
-import { Button, Heading, VStack } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import PopupDialog from "./popup";
+import { Heading } from "./heading";
+import Button from "@mui/material/Button";
 
 type Field = { type: "text" };
 
@@ -18,15 +19,15 @@ function CommandForm({
   const command_uuid = useMemo(() => uuidv4(), []);
   const [fields, set_fields] = useState(original_fields);
   return (
-    <VStack align={"start"}>
+    <div style={{ justifyContent: "start" }}>
       {command_name}
 
       <p>{command_uuid}</p>
       <PopupDialog />
-      <Button type="submit" onClick={() => console.log("HER")}>
+      <Button type="submit" onClick={() => console.log("HERE")}>
         Submit
       </Button>
-    </VStack>
+    </div>
   );
 }
 
