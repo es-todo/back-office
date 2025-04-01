@@ -54,7 +54,7 @@ export function App() {
     command_form: Omit<command_form, "command_uuid" | "values">
   ) =>
     set_command_forms([
-      { ...command_form, command_uuid: uuidv4(), values: {} },
+      { ...command_form, command_uuid: undefined, values: {} },
       ...command_forms,
     ]);
   return (
@@ -76,10 +76,13 @@ export function App() {
               Cancel
             </Button>
             <Button
+              disabled={command_forms[0]?.command_uuid !== undefined}
               onClick={() => {
-                const form = command_forms[0];
+                const [form, ...other_forms] = command_forms;
+                const command_uuid = uuidv4();
+                set_command_forms([{ ...form, command_uuid }, ...other_forms]);
                 broker.submit_command({
-                  command_uuid: form.command_uuid,
+                  command_uuid,
                   command_name: form.command_name,
                   command_data: form.values,
                 });
