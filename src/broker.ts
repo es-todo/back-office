@@ -12,6 +12,12 @@ export const initial_broker_state: broker_state = {
   log_in_status: "idle",
 };
 
+type command_form = {
+  command_uuid: string;
+  command_name: string;
+  command_data: any;
+};
+
 type message =
   | { type: "session"; session_id: string }
   | { type: "syn"; i: number };
@@ -122,5 +128,9 @@ export class Broker {
         connection.close();
       }
     });
+  }
+
+  public submit_command(command_form: command_form) {
+    console.log(command_form);
   }
 }

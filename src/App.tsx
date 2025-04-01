@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
+import { command_form } from "./command-form.ts";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
@@ -37,11 +38,6 @@ const modalstyle = {
   p: 1,
 };
 
-type command_form = {
-  command_name: string;
-  command_uuid: string;
-};
-
 export function App() {
   const [broker_state, set_broker_state] = useState(initial_broker_state);
   const broker = useMemo(
@@ -54,9 +50,13 @@ export function App() {
     return () => broker.terminate();
   }, [broker]);
   const [open, set_open] = useState(false);
-  const push_command = (command_form: command_form) =>
-    set_command_forms([command_form, ...command_forms]);
-
+  const open_command_dialog = (
+    command_form: Omit<command_form, "command_uuid" | "values">
+  ) =>
+    set_command_forms([
+      { ...command_form, command_uuid: uuidv4(), values: {} },
+      ...command_forms,
+    ]);
   return (
     <>
       <Modal open={command_forms.length > 0}>
@@ -65,7 +65,7 @@ export function App() {
             {command_forms[0]?.command_name ?? null}
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+            fields go here
           </Typography>
           <Stack
             direction="row"
@@ -75,7 +75,18 @@ export function App() {
             <Button onClick={() => set_command_forms(command_forms.slice(1))}>
               Cancel
             </Button>
-            <Button>Submit</Button>
+            <Button
+              onClick={() => {
+                const form = command_forms[0];
+                broker.submit_command({
+                  command_uuid: form.command_uuid,
+                  command_name: form.command_name,
+                  command_data: form.values,
+                });
+              }}
+            >
+              Submit
+            </Button>
           </Stack>
         </Box>
       </Modal>
@@ -89,10 +100,10 @@ export function App() {
             <MainContent connected={broker_state.connected} />
             <Button
               onClick={() =>
-                push_command({ command_name: "ping", command_uuid: uuidv4() })
+                open_command_dialog({ command_name: "ping", fields: [] })
               }
             >
-              Open modal
+              Ping!
             </Button>
           </Box>
         </Box>

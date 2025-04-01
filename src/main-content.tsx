@@ -1,35 +1,5 @@
-import { useMemo, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
-import PopupDialog from "./popup";
 import { Heading } from "./heading";
-import Button from "@mui/material/Button";
-
-type Field = { type: "text" };
-
-type CommandFormProps = {
-  command_name: string;
-  fields: Field[];
-};
-
-function CommandForm({
-  command_name,
-  fields: original_fields,
-}: CommandFormProps) {
-  const command_uuid = useMemo(() => uuidv4(), []);
-  const [fields, set_fields] = useState(original_fields);
-  return (
-    <div style={{ justifyContent: "start" }}>
-      {command_name}
-
-      <p>{command_uuid}</p>
-      <PopupDialog />
-      <Button type="submit" onClick={() => console.log("HERE")}>
-        Submit
-      </Button>
-    </div>
-  );
-}
 
 function Home({ connected }: { connected: boolean }) {
   return (
@@ -39,7 +9,6 @@ function Home({ connected }: { connected: boolean }) {
       </Heading>
       <p>We are {connected ? "connected." : "connecting ..."}</p>
       <p>This is the main content area.</p>
-      <CommandForm command_name="ping" fields={[]} />
     </>
   );
 }
