@@ -46,7 +46,7 @@ function NotFoundPage() {
   );
 }
 
-export function MainContent(props: { connected: boolean }) {
+export function Router(props: { connected: boolean }) {
   const { connected } = props;
   return (
     <Routes>

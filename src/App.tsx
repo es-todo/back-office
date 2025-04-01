@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
-import { SideMenu } from "./side-menu.tsx";
-import { MainContent } from "./main-content.tsx";
+import { SideDrawer } from "./side-drawer.tsx";
+import { Router } from "./router.tsx";
 import {
   Box,
   Button,
@@ -93,11 +93,11 @@ export function App() {
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <TitleBar open={open} toggle={() => set_open(!open)} />
-        <SideMenu open={open} onToggle={() => set_open(!open)} />
+        <SideDrawer open={open} onToggle={() => set_open(!open)} />
         <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
           <DrawerHeader />
           <Box sx={{ p: 2 }}>
-            <MainContent connected={broker_state.connected} />
+            <Router connected={broker_state.connected} />
             <Button
               onClick={() =>
                 open_command_dialog({ command_name: "ping", fields: [] })
