@@ -14,12 +14,13 @@ export const initial_broker_state: broker_state = {
 
 type command_form = {
   command_uuid: string;
-  command_name: string;
+  command_type: string;
   command_data: any;
 };
 
 type message =
   | { type: "session"; session_id: string }
+  | ({ type: "command" } & command_form)
   | { type: "syn"; i: number };
 
 export class Broker {
@@ -132,5 +133,6 @@ export class Broker {
 
   public submit_command(command_form: command_form) {
     console.log(command_form);
+    this.send({ type: "command", ...command_form });
   }
 }

@@ -3,7 +3,7 @@ export type command_field = {
 };
 
 export type command_form = {
-  command_name: string;
+  command_type: string;
   command_uuid: string | undefined;
   fields: command_field[];
   values: any;

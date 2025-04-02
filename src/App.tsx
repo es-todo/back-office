@@ -62,7 +62,7 @@ export function App() {
       <Modal open={command_forms.length > 0}>
         <Box sx={modalstyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            {command_forms[0]?.command_name ?? null}
+            {command_forms[0]?.command_type ?? null}
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             fields go here
@@ -73,7 +73,7 @@ export function App() {
             justifyContent="flex-end"
           >
             <Button onClick={() => set_command_forms(command_forms.slice(1))}>
-              Cancel
+              Close
             </Button>
             <Button
               disabled={command_forms[0]?.command_uuid !== undefined}
@@ -83,7 +83,7 @@ export function App() {
                 set_command_forms([{ ...form, command_uuid }, ...other_forms]);
                 broker.submit_command({
                   command_uuid,
-                  command_name: form.command_name,
+                  command_type: form.command_type,
                   command_data: form.values,
                 });
               }}
@@ -103,7 +103,7 @@ export function App() {
             <Router connected={broker_state.connected} />
             <Button
               onClick={() =>
-                open_command_dialog({ command_name: "ping", fields: [] })
+                open_command_dialog({ command_type: "ping", fields: [] })
               }
             >
               Ping!
