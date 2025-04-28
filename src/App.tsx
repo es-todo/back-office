@@ -59,7 +59,14 @@ export function App() {
     ]);
   return (
     <>
-      <Modal open={command_forms.length > 0}>
+      <Modal
+        open={
+          command_forms.length > 0 &&
+          (!command_forms[0].command_uuid ||
+            broker_state.commands[command_forms[0].command_uuid] !==
+              "succeeded")
+        }
+      >
         <Box sx={modalstyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
             {command_forms[0]?.command_type ?? null}

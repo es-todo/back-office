@@ -2,14 +2,18 @@ import * as eio from "engine.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 
+type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
+
 export type broker_state = {
   connected: boolean;
   log_in_status: "logged_in" | "logging_in" | "idle";
+  commands: { [command_uuid: string]: command_status_type };
 };
 
 export const initial_broker_state: broker_state = {
   connected: false,
   log_in_status: "idle",
+  commands: {},
 };
 
 type command_form = {
@@ -35,7 +39,6 @@ export class Broker {
   private on_state_change: (state: broker_state) => void;
 
   constructor(url: string, set_state: (state: broker_state) => void) {
-    console.log(`new broker created`);
     this.url = url;
     this.on_state_change = set_state;
     this.keep_connection();
@@ -58,7 +61,6 @@ export class Broker {
     if (!this.connection) return;
     this.message_queue.push({ type: "syn", i: this.syn });
     this.syn += 1;
-    console.log(JSON.stringify(this.message_queue));
     this.connection.send(JSON.stringify(this.message_queue));
     this.sent_messages = [...this.sent_messages, ...this.message_queue];
     this.message_queue = [];
@@ -86,7 +88,6 @@ export class Broker {
       const messages = JSON.parse(data);
       assert(Array.isArray(messages));
       messages.forEach((message) => {
-        console.log(message);
         assert(typeof message === "object");
         switch (message.type) {
           case "ack": {
@@ -107,6 +108,17 @@ export class Broker {
             const { is_new } = message;
             assert(typeof is_new === "boolean");
             console.log({ is_new });
+            return;
+          }
+          case "command_status": {
+            const { command_uuid, status } = message as {
+              command_uuid: string;
+              status: command_status_type;
+            };
+            this.update_state({
+              ...this.state,
+              commands: { ...this.state.commands, [command_uuid]: status },
+            });
             return;
           }
           default:
@@ -132,7 +144,6 @@ export class Broker {
   }
 
   public submit_command(command_form: command_form) {
-    console.log(command_form);
     this.send({ type: "command", ...command_form });
   }
 }
