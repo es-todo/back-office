@@ -3,6 +3,8 @@ import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
+import { type object_type } from "schemata/generated/object_type";
+
 import {
   Box,
   Button,
@@ -44,6 +46,32 @@ export function App() {
     () => new Broker(url, (state) => set_broker_state(state)),
     []
   );
+  const fetch = useMemo(
+    () =>
+      <T extends object_type["type"]>(
+        type: T,
+        id: string
+      ): (object_type & { type: T })["data"] | undefined => {
+        const state = broker_state.objects[type]?.[id];
+        if (!state) {
+          broker.do_fetch(type, id);
+          return undefined;
+        }
+        switch (state.type) {
+          case "fetching":
+            return undefined;
+          case "fetched":
+            return state.data;
+          default: {
+            const invalid: never = state;
+            throw invalid;
+          }
+        }
+      },
+    [broker_state, broker]
+  );
+  const ping = fetch("counter", "ping");
+
   const [command_forms, set_command_forms] = useState<command_form[]>([]);
 
   useEffect(() => {
@@ -113,7 +141,7 @@ export function App() {
                 open_command_dialog({ command_type: "ping", fields: [] })
               }
             >
-              Ping!
+              Ping {ping === undefined ? "?" : ping.count}!
             </Button>
           </Box>
         </Box>
