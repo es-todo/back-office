@@ -86,27 +86,28 @@ export function App() {
       { ...command_form, command_uuid: undefined, values: {} },
       ...command_forms,
     ]);
+  const top_command = command_forms[0];
+  const top_command_uuid = top_command?.command_uuid;
+  const top_command_status =
+    top_command_uuid === undefined
+      ? undefined
+      : broker_state.commands[top_command_uuid];
+  if (top_command_status === "succeeded") {
+    set_command_forms(
+      command_forms.filter((x) => x.command_uuid !== top_command_uuid)
+    );
+  }
   return (
     <>
-      <Modal
-        open={
-          command_forms.length > 0 &&
-          (!command_forms[0].command_uuid ||
-            broker_state.commands[command_forms[0].command_uuid] !==
-              "succeeded")
-        }
-      >
+      <Modal open={top_command && top_command_status !== "succeeded"}>
         <Box sx={modalstyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            {command_forms[0]?.command_type ?? null}
+            {top_command?.command_type ?? null}
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             fields go here
           </Typography>
-          <Typography>
-            {command_forms[0]?.command_uuid &&
-              (broker_state.commands[command_forms[0].command_uuid] ?? null)}
-          </Typography>
+          <Typography>{top_command_status ?? null}</Typography>
           <Stack
             direction="row"
             sx={{ width: "100%" }}
