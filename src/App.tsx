@@ -103,6 +103,10 @@ export function App() {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             fields go here
           </Typography>
+          <Typography>
+            {command_forms[0]?.command_uuid &&
+              (broker_state.commands[command_forms[0].command_uuid] ?? null)}
+          </Typography>
           <Stack
             direction="row"
             sx={{ width: "100%" }}
