@@ -11,6 +11,12 @@ type object_state =
       t: number;
       i: number;
       data: any;
+    }
+  | {
+      type: "stale";
+      t: number;
+      i: number;
+      data: any;
     };
 
 export type broker_state = {
@@ -120,6 +126,37 @@ export class Broker {
             const { is_new } = message;
             assert(typeof is_new === "boolean");
             console.log({ is_new });
+            if (is_new) {
+              // objects might be stale now.
+              // all previously fetched objects must be refetched
+              const objects = Object.fromEntries(
+                Object.entries(this.state.objects).map(([type, h]) => [
+                  type,
+                  Object.fromEntries(
+                    Object.entries(h).map(([id, state]) => {
+                      this.send({
+                        type: "fetch",
+                        object_type: type,
+                        object_id: id,
+                      });
+                      console.log({ in: "refetching", type, id });
+                      switch (state.type) {
+                        case "fetching":
+                        case "stale":
+                          return [id, state];
+                        case "fetched":
+                          return [id, { ...state, type: "stale" }];
+                        default:
+                          const invalid: never = state;
+                          throw invalid;
+                      }
+                    })
+                  ),
+                ])
+              );
+              this.update_state({ ...this.state, objects });
+            }
+            this.flush_message_queue();
             return;
           }
           case "command_status": {
@@ -160,7 +197,6 @@ export class Broker {
         connection.send(
           JSON.stringify([{ type: "session", session_id: this.session_id }])
         );
-        this.flush_message_queue();
       } else {
         connection.close();
       }
@@ -185,12 +221,15 @@ export class Broker {
       switch (old_state.type) {
         case "fetching":
           return true;
+        case "stale":
         case "fetched": {
           switch (new_state.type) {
             case "fetching":
               return false;
+            case "stale":
             case "fetched":
               return (
+                old_state.type !== new_state.type ||
                 new_state.t > old_state.t ||
                 (new_state.t === old_state.t && new_state.i > old_state.i)
               );

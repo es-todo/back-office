@@ -61,6 +61,7 @@ export function App() {
           case "fetching":
             return undefined;
           case "fetched":
+          case "stale":
             return state.data;
           default: {
             const invalid: never = state;
