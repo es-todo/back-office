@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import { command_form } from "./command-form.ts";
+import { LoginForm } from "./login-form.tsx";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
@@ -149,6 +150,7 @@ export function App() {
             >
               Ping {ping === undefined ? "?" : ping.count}!
             </Button>
+            <LoginForm logged_in={false} />
           </Box>
         </Box>
       </Box>
