@@ -1,6 +1,56 @@
 import { validate as email_valid } from "email-validator";
 import { Button, Divider, Paper, TextField } from "@mui/material";
-import { useState } from "react";
+import { JSX, useState } from "react";
+
+type PasswordFieldProps = {
+  password: string;
+  set_password: (password: string) => void;
+  error: string | undefined;
+};
+
+function PasswordField(props: PasswordFieldProps) {
+  const { password, set_password, error } = props;
+  return (
+    <TextField
+      type="password"
+      name="password"
+      autoComplete="current-password"
+      required
+      fullWidth
+      value={password}
+      onChange={(e) => set_password(e.target.value)}
+      error={password !== "" && error !== undefined}
+      helperText={error}
+      margin="dense"
+      label="Password"
+    />
+  );
+}
+
+type EmailFieldProps = {
+  email: string;
+  set_email: (email: string) => void;
+  error: string | undefined;
+};
+
+function EmailField(props: EmailFieldProps) {
+  const { email, set_email, error } = props;
+  return (
+    <TextField
+      type="text"
+      name="email"
+      autoComplete="current-email"
+      required
+      fullWidth
+      value={email}
+      onChange={(e) => set_email(e.target.value)}
+      error={email !== "" && error !== undefined}
+      helperText={error}
+      margin="dense"
+      label="Email"
+    />
+  );
+}
 
 type sign_up_props = {
   set_sign_up: (sign_up: boolean) => void;
@@ -32,67 +82,101 @@ function mkpassword(password: string): password_state {
   return { password, error: undefined };
 }
 
-function SignUpForm({ set_sign_up }: sign_up_props) {
-  const [email, set_email] = useState<email_state>(mkemail(""));
-  const [password, set_password] = useState<password_state>(mkpassword(""));
+function Form(props: {
+  title: string;
+  form: JSX.Element;
+  footer: JSX.Element;
+}) {
+  const { title, form, footer } = props;
   return (
     <div style={{ width: "22em" }}>
       <Paper style={{ padding: "1px 16px 10px" }}>
         <div>
-          <h1>Sign Up</h1>
-          <form>
-            <TextField
-              type="text"
-              name="email"
-              autoComplete="current-email"
-              required
-              fullWidth
-              value={email.email}
-              onChange={(e) => set_email(mkemail(e.target.value))}
-              error={email.email !== "" && email.error !== undefined}
-              helperText={email.error}
-              margin="dense"
-              label="Email"
-            />
-            <TextField
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              required
-              fullWidth
-              value={password.password}
-              onChange={(e) => set_password(mkpassword(e.target.value))}
-              error={password.password !== "" && password.error !== undefined}
-              helperText={password.error}
-              margin="dense"
-              label="Password"
-            />
-            <Button
-              disabled={!!password.error || !!email.error}
-              fullWidth
-              color="primary"
-              size="large"
-            >
-              Sign Up
-            </Button>
-          </form>
+          <h1>{title}</h1>
+          {form}
           <Divider style={{ marginTop: "10px", marginBottom: "5px" }} />
-          Already registed?{" "}
-          <Button onClick={() => set_sign_up(false)} size="small">
-            Sign In
-          </Button>
+          {footer}
         </div>
       </Paper>
     </div>
   );
 }
 
-function SignInForm({ set_sign_up }: sign_up_props) {
+function SignUpForm({ set_sign_up }: sign_up_props) {
+  const [email, set_email] = useState<email_state>(mkemail(""));
+  const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
-    <div>
-      <h1>Sign In Form</h1>
-      Not registed? <Button onClick={() => set_sign_up(true)}>Sign Up</Button>
-    </div>
+    <Form
+      title="Sign Up"
+      form={
+        <form>
+          <EmailField
+            email={email.email}
+            set_email={(email) => set_email(mkemail(email))}
+            error={email.error}
+          />
+          <PasswordField
+            password={password.password}
+            error={password.error}
+            set_password={(password) => set_password(mkpassword(password))}
+          />
+          <Button
+            disabled={!!password.error || !!email.error}
+            fullWidth
+            color="primary"
+            size="large"
+          >
+            Sign Up
+          </Button>
+        </form>
+      }
+      footer={
+        <>
+          Already registed?{" "}
+          <Button onClick={() => set_sign_up(false)} size="small">
+            Sign In
+          </Button>
+        </>
+      }
+    />
+  );
+}
+
+function SignInForm({ set_sign_up }: sign_up_props) {
+  const [email, set_email] = useState<email_state>(mkemail(""));
+  const [password, set_password] = useState<password_state>(mkpassword(""));
+  return (
+    <Form
+      title="Sign In"
+      form={
+        <form>
+          <EmailField
+            email={email.email}
+            set_email={(email) => set_email(mkemail(email))}
+            error={email.error}
+          />
+          <PasswordField
+            password={password.password}
+            error={password.error}
+            set_password={(password) => set_password(mkpassword(password))}
+          />
+          <Button
+            disabled={!!password.error || !!email.error}
+            fullWidth
+            color="primary"
+            size="large"
+          >
+            Sign In
+          </Button>
+        </form>
+      }
+      footer={
+        <>
+          Not registed?{" "}
+          <Button onClick={() => set_sign_up(true)}>Sign Up</Button>
+        </>
+      }
+    />
   );
 }
 
