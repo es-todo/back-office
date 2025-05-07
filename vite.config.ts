@@ -9,7 +9,7 @@ export default defineConfig({
     checker({
       typescript: {
         tsconfigPath: "./tsconfig.json",
-        buildMode: false, // enable/disable debugging in browser
+        buildMode: true, // enable/disable debugging in browser
       },
     }),
   ],

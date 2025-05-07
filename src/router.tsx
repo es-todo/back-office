@@ -4,9 +4,7 @@ import { Heading } from "./heading";
 function Home({ connected }: { connected: boolean }) {
   return (
     <>
-      <Heading size="lg" mb={4}>
-        Welcome to Back Office Ops.
-      </Heading>
+      <Heading>Welcome to Back Office Ops.</Heading>
       <p>We are {connected ? "connected." : "connecting ..."}</p>
       <p>This is the main content area.</p>
     </>
@@ -16,9 +14,7 @@ function Home({ connected }: { connected: boolean }) {
 function Settings() {
   return (
     <>
-      <Heading size="lg" mb={4}>
-        Settings
-      </Heading>
+      <Heading>Settings</Heading>
       <p>This is the main settings area.</p>
     </>
   );
@@ -27,9 +23,7 @@ function Settings() {
 function Profile() {
   return (
     <>
-      <Heading size="lg" mb={4}>
-        Profile
-      </Heading>
+      <Heading>Profile</Heading>
       <p>This is the main profile area.</p>
     </>
   );
@@ -38,9 +32,7 @@ function Profile() {
 function NotFoundPage() {
   return (
     <>
-      <Heading size="lg" mb={4}>
-        Not Found
-      </Heading>
+      <Heading>Not Found</Heading>
       <p>This page does not exist.</p>
     </>
   );
