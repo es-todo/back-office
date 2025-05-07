@@ -1,6 +1,8 @@
 import { validate as email_valid } from "email-validator";
 import { Button, Divider, Paper, TextField } from "@mui/material";
 import { JSX, useState } from "react";
+import { sha256 } from "js-sha256";
+import { auth_state } from "./auth-state";
 
 type PasswordFieldProps = {
   password: string;
@@ -52,8 +54,14 @@ function EmailField(props: EmailFieldProps) {
   );
 }
 
-type sign_up_props = {
+type sign_in_props = {
   set_sign_up: (sign_up: boolean) => void;
+};
+
+type sign_up_props = {
+  auth_state: auth_state;
+  set_sign_up: (sign_up: boolean) => void;
+  do_sign_up: (credentials: { email: string; password: string }) => void;
 };
 
 type email_state = {
@@ -102,7 +110,7 @@ function Form(props: {
   );
 }
 
-function SignUpForm({ set_sign_up }: sign_up_props) {
+function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
   const [email, set_email] = useState<email_state>(mkemail(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
@@ -121,13 +129,30 @@ function SignUpForm({ set_sign_up }: sign_up_props) {
             set_password={(password) => set_password(mkpassword(password))}
           />
           <Button
-            disabled={!!password.error || !!email.error}
+            disabled={
+              !!password.error ||
+              !!email.error ||
+              auth_state.type === "signing_up" ||
+              auth_state.type === "signing_in"
+            }
             fullWidth
             color="primary"
             size="large"
+            onClick={() => {
+              do_sign_up({
+                email: email.email,
+                password: sha256(password.password),
+              });
+            }}
           >
             Sign Up
           </Button>
+          {auth_state.type === "sign_up_error" && (
+            <>
+              Error signing up. Please check that your email is not already
+              registered.
+            </>
+          )}
         </form>
       }
       footer={
@@ -142,7 +167,7 @@ function SignUpForm({ set_sign_up }: sign_up_props) {
   );
 }
 
-function SignInForm({ set_sign_up }: sign_up_props) {
+function SignInForm({ set_sign_up }: sign_in_props) {
   const [email, set_email] = useState<email_state>(mkemail(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
@@ -181,16 +206,21 @@ function SignInForm({ set_sign_up }: sign_up_props) {
 }
 
 type login_form_props = {
-  logged_in: boolean;
+  auth_state: auth_state;
+  do_sign_up: (credentials: { email: string; password: string }) => void;
 };
 
-export function LoginForm({ logged_in }: login_form_props) {
-  if (logged_in) return null;
+export function LoginForm({ auth_state, do_sign_up }: login_form_props) {
+  if (auth_state.type === "authenticated") return null;
   const [sign_up, set_sign_up] = useState(true);
   return (
     <div>
       {sign_up ? (
-        <SignUpForm set_sign_up={set_sign_up} />
+        <SignUpForm
+          set_sign_up={set_sign_up}
+          do_sign_up={do_sign_up}
+          auth_state={auth_state}
+        />
       ) : (
         <SignInForm set_sign_up={set_sign_up} />
       )}

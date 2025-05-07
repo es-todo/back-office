@@ -1,6 +1,9 @@
 import * as eio from "engine.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
+import { type auth_state } from "./auth-state";
+
+type credentials = { email: string; password: string };
 
 type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
 
@@ -24,6 +27,7 @@ export type broker_state = {
   log_in_status: "logged_in" | "logging_in" | "idle";
   commands: { [command_uuid: string]: command_status_type };
   objects: { [type: string]: { [id: string]: object_state } };
+  auth_state: auth_state;
 };
 
 export const initial_broker_state: broker_state = {
@@ -31,6 +35,7 @@ export const initial_broker_state: broker_state = {
   log_in_status: "idle",
   commands: {},
   objects: {},
+  auth_state: { type: "idle" },
 };
 
 type command_form = {
@@ -43,6 +48,13 @@ type message =
   //| { type: "session"; session_id: string }
   | ({ type: "command" } & command_form)
   | { type: "fetch"; object_type: string; object_id: string }
+  | {
+      type: "register";
+      email: string;
+      password: string;
+      user_id: string;
+      command_uuid: string;
+    }
   | { type: "syn"; i: number };
 
 export class Broker {
@@ -168,6 +180,28 @@ export class Broker {
               ...this.state,
               commands: { ...this.state.commands, [command_uuid]: status },
             });
+            if (
+              this.state.auth_state.type === "signing_up" &&
+              this.state.auth_state.command_uuid === command_uuid
+            ) {
+              if (status === "failed" || status === "aborted") {
+                this.update_state({
+                  ...this.state,
+                  auth_state: {
+                    type: "sign_up_error",
+                    error: status,
+                  },
+                });
+              }
+            }
+            return;
+          }
+          case "auth": {
+            const { user_id } = message as { user_id: string };
+            this.update_state({
+              ...this.state,
+              auth_state: { type: "authenticated", user_id },
+            });
             return;
           }
           case "rev": {
@@ -266,5 +300,27 @@ export class Broker {
     } else {
       console.log("already fetched");
     }
+  }
+
+  public do_sign_up({ email, password }: credentials) {
+    const command_uuid = uuidv4();
+    const user_id = uuidv4();
+    this.send({
+      type: "register",
+      email,
+      password,
+      command_uuid,
+      user_id,
+    });
+    this.update_state({
+      ...this.state,
+      auth_state: {
+        type: "signing_up",
+        command_uuid,
+        user_id,
+        email,
+        password,
+      },
+    });
   }
 }

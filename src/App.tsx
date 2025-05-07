@@ -4,7 +4,6 @@ import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
 import { type object_type } from "schemata/generated/object_type";
-
 import {
   Box,
   Button,
@@ -150,7 +149,10 @@ export function App() {
             >
               Ping {ping === undefined ? "?" : ping.count}!
             </Button>
-            <LoginForm logged_in={false} />
+            <LoginForm
+              auth_state={broker_state.auth_state}
+              do_sign_up={(credentials) => broker.do_sign_up(credentials)}
+            />
           </Box>
         </Box>
       </Box>
