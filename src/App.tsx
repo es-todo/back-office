@@ -152,6 +152,7 @@ export function App() {
             <LoginForm
               auth_state={broker_state.auth_state}
               do_sign_up={(credentials) => broker.do_sign_up(credentials)}
+              do_sign_in={(credentials) => broker.do_sign_in(credentials)}
             />
           </Box>
         </Box>

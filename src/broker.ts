@@ -55,6 +55,7 @@ type message =
       user_id: string;
       command_uuid: string;
     }
+  | { type: "sign_in"; email: string; password: string }
   | { type: "syn"; i: number };
 
 export class Broker {
@@ -318,6 +319,18 @@ export class Broker {
         type: "signing_up",
         command_uuid,
         user_id,
+        email,
+        password,
+      },
+    });
+  }
+
+  public do_sign_in({ email, password }: credentials) {
+    this.send({ type: "sign_in", email, password });
+    this.update_state({
+      ...this.state,
+      auth_state: {
+        type: "signing_in",
         email,
         password,
       },
