@@ -140,6 +140,12 @@ export class Broker {
             assert(typeof is_new === "boolean");
             console.log({ is_new });
             if (is_new) {
+              // if we have a saved email/password, login
+              const email = localStorage.getItem("email");
+              const password = localStorage.getItem("password");
+              if (email && password) {
+                this.do_sign_in({ email, password });
+              }
               // objects might be stale now.
               // all previously fetched objects must be refetched
               const objects = Object.fromEntries(
@@ -198,6 +204,15 @@ export class Broker {
             return;
           }
           case "auth": {
+            const auth_state = this.state.auth_state;
+            switch (auth_state.type) {
+              case "signing_up":
+              case "signing_in": {
+                const { email, password } = auth_state;
+                localStorage.setItem("email", email);
+                localStorage.setItem("password", password);
+              }
+            }
             const { user_id } = message as { user_id: string };
             this.update_state({
               ...this.state,
