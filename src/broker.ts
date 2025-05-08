@@ -203,6 +203,17 @@ export class Broker {
             }
             return;
           }
+          case "auth_error": {
+            this.update_state({
+              ...this.state,
+              auth_state: {
+                type: "sign_in_error",
+                error:
+                  "Failed to sign in.  Please check that your email and password are typed correctly.",
+              },
+            });
+            return;
+          }
           case "auth": {
             const auth_state = this.state.auth_state;
             switch (auth_state.type) {

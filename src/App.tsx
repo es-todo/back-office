@@ -147,7 +147,7 @@ export function App() {
                 open_command_dialog({ command_type: "ping", fields: [] })
               }
             >
-              Ping {ping === undefined ? "?" : ping.count}!
+              Ping {ping?.count ?? null}!
             </Button>
             <LoginForm
               auth_state={broker_state.auth_state}
