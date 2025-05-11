@@ -68,6 +68,7 @@ export class Broker {
   private syn = 0;
   private state: broker_state = initial_broker_state;
   private on_state_change: (state: broker_state) => void;
+  private command_callbacks: { [command_uuid: string]: () => void } = {};
 
   constructor(url: string, set_state: (state: broker_state) => void) {
     this.url = url;
@@ -201,6 +202,16 @@ export class Broker {
                 });
               }
             }
+            const call_back = this.command_callbacks[command_uuid];
+            if (
+              call_back &&
+              (status === "succeeded" ||
+                status === "failed" ||
+                status === "aborted")
+            ) {
+              delete this.command_callbacks[command_uuid];
+              call_back();
+            }
             return;
           }
           case "auth_error": {
@@ -264,7 +275,10 @@ export class Broker {
     });
   }
 
-  public submit_command(command_form: command_form) {
+  public submit_command(command_form: command_form, on_done?: () => void) {
+    if (on_done) {
+      this.command_callbacks[command_form.command_uuid] = on_done;
+    }
     this.send({ type: "command", ...command_form });
   }
 

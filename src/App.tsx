@@ -3,7 +3,6 @@ import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
-import { type object_type } from "schemata/generated/object_type";
 import {
   Box,
   Button,
@@ -13,9 +12,11 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { v4 as uuidv4 } from "uuid";
 import { command_form } from "./command-form.ts";
 import { LoginForm } from "./login-form.tsx";
+import { UserBoards } from "./user-boards.tsx";
+import { fetch } from "./fetch.ts";
+import { uuidv4 } from "./uuidv4.ts";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
@@ -42,33 +43,37 @@ const modalstyle = {
 
 export function App() {
   const [broker_state, set_broker_state] = useState(initial_broker_state);
+  let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
   const broker = useMemo(
-    () => new Broker(url, (state) => set_broker_state(state)),
+    () =>
+      new Broker(url, (state) => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          set_broker_state(state);
+          timeout = undefined;
+        }, 0);
+      }),
     []
   );
-  const fetch = useMemo(
-    () =>
-      <T extends object_type["type"]>(
-        type: T,
-        id: string
-      ): (object_type & { type: T })["data"] | undefined => {
-        const state = broker_state.objects[type]?.[id];
-        if (!state) {
-          broker.do_fetch(type, id);
+  const fetch = useMemo<fetch>(
+    () => (type, id) => {
+      const state = broker_state.objects[type]?.[id];
+      if (!state) {
+        broker.do_fetch(type, id);
+        return undefined;
+      }
+      switch (state.type) {
+        case "fetching":
           return undefined;
+        case "fetched":
+        case "stale":
+          return state.data;
+        default: {
+          const invalid: never = state;
+          throw invalid;
         }
-        switch (state.type) {
-          case "fetching":
-            return undefined;
-          case "fetched":
-          case "stale":
-            return state.data;
-          default: {
-            const invalid: never = state;
-            throw invalid;
-          }
-        }
-      },
+      }
+    },
     [broker_state, broker]
   );
   const ping = fetch("counter", "ping");
@@ -149,11 +154,29 @@ export function App() {
             >
               Ping {ping?.count ?? null}!
             </Button>
-            <LoginForm
-              auth_state={broker_state.auth_state}
-              do_sign_up={(credentials) => broker.do_sign_up(credentials)}
-              do_sign_in={(credentials) => broker.do_sign_in(credentials)}
-            />
+            {broker_state.auth_state.type === "authenticated" ? (
+              <UserBoards
+                commands={broker_state.commands}
+                fetch={fetch}
+                user_id={broker_state.auth_state.user_id}
+                submit_command={(command_uuid, { type, data }, on_done) =>
+                  broker.submit_command(
+                    {
+                      command_uuid,
+                      command_type: type,
+                      command_data: data,
+                    },
+                    on_done
+                  )
+                }
+              />
+            ) : (
+              <LoginForm
+                auth_state={broker_state.auth_state}
+                do_sign_up={(credentials) => broker.do_sign_up(credentials)}
+                do_sign_in={(credentials) => broker.do_sign_in(credentials)}
+              />
+            )}
           </Box>
         </Box>
       </Box>
