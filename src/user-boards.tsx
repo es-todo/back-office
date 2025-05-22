@@ -172,7 +172,7 @@ export function UserBoards({
     <div>
       Boards
       <List style={{ width: "30%" }}>
-        {boards.list.map((board_id) => (
+        {(boards?.list ?? []).map((board_id) => (
           <ListItem
             key={board_id}
             disablePadding
