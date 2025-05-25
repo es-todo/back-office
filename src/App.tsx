@@ -12,11 +12,12 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { command_form } from "./command-form.ts";
+import { command_dialog_form } from "./command-dialog-form.ts";
 import { LoginForm } from "./login-form.tsx";
 import { UserBoards } from "./user-boards.tsx";
 import { fetch } from "./fetch.ts";
 import { uuidv4 } from "./uuidv4.ts";
+import { Context } from "./context.ts";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
@@ -78,14 +79,16 @@ export function App() {
   );
   const ping = fetch("counter", "ping");
 
-  const [command_forms, set_command_forms] = useState<command_form[]>([]);
+  const [command_forms, set_command_forms] = useState<command_dialog_form[]>(
+    []
+  );
 
   useEffect(() => {
     return () => broker.terminate();
   }, [broker]);
   const [open, set_open] = useState(false);
   const open_command_dialog = (
-    command_form: Omit<command_form, "command_uuid" | "values">
+    command_form: Omit<command_dialog_form, "command_uuid" | "values">
   ) =>
     set_command_forms([
       { ...command_form, command_uuid: undefined, values: {} },
@@ -102,6 +105,23 @@ export function App() {
       command_forms.filter((x) => x.command_uuid !== top_command_uuid)
     );
   }
+  const C: Context = {
+    auth_state: broker_state.auth_state,
+    do_sign_up: (credentials) => broker.do_sign_up(credentials),
+    do_sign_in: (credentials) => broker.do_sign_in(credentials),
+
+    fetch: fetch,
+    commands: broker_state.commands,
+    submit_command: (command_uuid, { type, data }, on_done) =>
+      broker.submit_command(
+        {
+          command_uuid,
+          command_type: type,
+          command_data: data,
+        },
+        on_done
+      ),
+  };
   return (
     <>
       <Modal open={top_command && top_command_status !== "succeeded"}>
@@ -146,7 +166,7 @@ export function App() {
         <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
           <DrawerHeader />
           <Box sx={{ p: 2 }}>
-            <Router connected={broker_state.connected} />
+            <Router connected={broker_state.connected} C={C} />
             <Button
               onClick={() =>
                 open_command_dialog({ command_type: "ping", fields: [] })
@@ -155,27 +175,9 @@ export function App() {
               Ping {ping?.count ?? null}!
             </Button>
             {broker_state.auth_state.type === "authenticated" ? (
-              <UserBoards
-                commands={broker_state.commands}
-                fetch={fetch}
-                user_id={broker_state.auth_state.user_id}
-                submit_command={(command_uuid, { type, data }, on_done) =>
-                  broker.submit_command(
-                    {
-                      command_uuid,
-                      command_type: type,
-                      command_data: data,
-                    },
-                    on_done
-                  )
-                }
-              />
+              <UserBoards user_id={broker_state.auth_state.user_id} C={C} />
             ) : (
-              <LoginForm
-                auth_state={broker_state.auth_state}
-                do_sign_up={(credentials) => broker.do_sign_up(credentials)}
-                do_sign_in={(credentials) => broker.do_sign_in(credentials)}
-              />
+              <LoginForm C={C} />
             )}
           </Box>
         </Box>

@@ -1,5 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { Heading } from "./heading";
+import { ProfilePageContent } from "./profile-page";
+import { Context } from "./context";
 
 function Home({ connected }: { connected: boolean }) {
   return (
@@ -20,10 +22,11 @@ function Settings() {
   );
 }
 
-function Profile() {
+function Profile({ C }: { C: Context }) {
   return (
     <>
       <Heading>Profile</Heading>
+      <ProfilePageContent C={C} />
       <p>This is the main profile area.</p>
     </>
   );
@@ -38,14 +41,14 @@ function NotFoundPage() {
   );
 }
 
-export function Router(props: { connected: boolean }) {
-  const { connected } = props;
+export function Router(props: { connected: boolean; C: Context }) {
+  const { connected, C } = props;
   return (
     <Routes>
       <Route path="/" element={<Home connected={connected} />} />
       <Route path="/dashboard" element={<Home connected={connected} />} />
       <Route path="/settings" element={<Settings />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={<Profile C={C} />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

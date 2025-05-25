@@ -1,6 +1,7 @@
 import { validate as email_valid } from "email-validator";
 import { Button, Divider, Paper, TextField } from "@mui/material";
 import { JSX, useState } from "react";
+import { Context } from "./context";
 import { sha256 } from "js-sha256";
 import { auth_state } from "./auth-state";
 
@@ -224,17 +225,8 @@ function SignInForm({ set_sign_up, do_sign_in, auth_state }: sign_in_props) {
   );
 }
 
-type login_form_props = {
-  auth_state: auth_state;
-  do_sign_up: (credentials: { email: string; password: string }) => void;
-  do_sign_in: (credentials: { email: string; password: string }) => void;
-};
-
-export function LoginForm({
-  auth_state,
-  do_sign_up,
-  do_sign_in,
-}: login_form_props) {
+export function LoginForm({ C }: { C: Context }) {
+  const { auth_state, do_sign_up, do_sign_in } = C;
   if (auth_state.type === "authenticated") return null;
   const [sign_up, set_sign_up] = useState(true);
   return (
