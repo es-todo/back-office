@@ -3,7 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 import { type auth_state } from "./auth-state";
 
-type credentials = { email: string; password: string };
+type credentials = { username: string; password: string };
+type signup_params = {
+  email: string;
+  username: string;
+  realname: string;
+  password: string;
+};
 
 type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
 
@@ -52,10 +58,12 @@ type message =
       type: "register";
       email: string;
       password: string;
+      username: string;
+      realname: string;
       user_id: string;
       command_uuid: string;
     }
-  | { type: "sign_in"; email: string; password: string }
+  | { type: "sign_in"; username: string; password: string }
   | { type: "syn"; i: number };
 
 export class Broker {
@@ -142,10 +150,10 @@ export class Broker {
             console.log({ is_new });
             if (is_new) {
               // if we have a saved email/password, login
-              const email = localStorage.getItem("email");
+              const username = localStorage.getItem("username");
               const password = localStorage.getItem("password");
-              if (email && password) {
-                this.do_sign_in({ email, password });
+              if (username && password) {
+                this.do_sign_in({ username, password });
               }
               // objects might be stale now.
               // all previously fetched objects must be refetched
@@ -230,8 +238,8 @@ export class Broker {
             switch (auth_state.type) {
               case "signing_up":
               case "signing_in": {
-                const { email, password } = auth_state;
-                localStorage.setItem("email", email);
+                const { username, password } = auth_state;
+                localStorage.setItem("username", username);
                 localStorage.setItem("password", password);
               }
             }
@@ -343,12 +351,14 @@ export class Broker {
     }
   }
 
-  public do_sign_up({ email, password }: credentials) {
+  public do_sign_up({ email, username, realname, password }: signup_params) {
     const command_uuid = uuidv4();
     const user_id = uuidv4();
     this.send({
       type: "register",
       email,
+      username,
+      realname,
       password,
       command_uuid,
       user_id,
@@ -359,19 +369,21 @@ export class Broker {
         type: "signing_up",
         command_uuid,
         user_id,
+        username,
+        realname,
         email,
         password,
       },
     });
   }
 
-  public do_sign_in({ email, password }: credentials) {
-    this.send({ type: "sign_in", email, password });
+  public do_sign_in({ username, password }: credentials) {
+    this.send({ type: "sign_in", username, password });
     this.update_state({
       ...this.state,
       auth_state: {
         type: "signing_in",
-        email,
+        username,
         password,
       },
     });

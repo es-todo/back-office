@@ -55,20 +55,55 @@ function EmailField(props: EmailFieldProps) {
   );
 }
 
+type UsernameFieldProps = {
+  username: string;
+  set_username: (username: string) => void;
+  error: string | undefined;
+};
+
+function UsernameField(props: UsernameFieldProps) {
+  const { username, set_username, error } = props;
+  return (
+    <TextField
+      type="text"
+      name="username"
+      autoComplete="current-username"
+      required
+      fullWidth
+      value={username}
+      onChange={(e) => set_username(e.target.value)}
+      error={username !== "" && error !== undefined}
+      helperText={error}
+      margin="dense"
+      label="Username"
+    />
+  );
+}
+
 type sign_in_props = {
   auth_state: auth_state;
   set_sign_up: (sign_up: boolean) => void;
-  do_sign_in: (credentials: { email: string; password: string }) => void;
+  do_sign_in: (credentials: { username: string; password: string }) => void;
 };
 
 type sign_up_props = {
   auth_state: auth_state;
   set_sign_up: (sign_up: boolean) => void;
-  do_sign_up: (credentials: { email: string; password: string }) => void;
+  do_sign_up: (credentials: {
+    email: string;
+    username: string;
+    realname: string;
+    password: string;
+  }) => void;
 };
 
 type email_state = {
   email: string;
+  error: string | undefined;
+};
+
+type username_state = {
+  username: string;
   error: string | undefined;
 };
 
@@ -83,6 +118,17 @@ function mkemail(email: string): email_state {
     return { email, error: undefined };
   }
   return { email, error: "Invalid email!" };
+}
+
+function mkusername(username: string): username_state {
+  username = username.replace(/\s/m, "");
+  if (username === "") return { username: "", error: "Required" };
+  const m = username.match(/[^a-zA-Z0-9_-]/);
+  if (m) {
+    return { username, error: `invalid character '${m[0]}'` };
+  } else {
+    return { username, error: undefined };
+  }
 }
 
 function mkpassword(password: string): password_state {
@@ -115,12 +161,18 @@ function Form(props: {
 
 function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
   const [email, set_email] = useState<email_state>(mkemail(""));
+  const [username, set_username] = useState<username_state>(mkusername(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
     <Form
       title="Sign Up"
       form={
         <form>
+          <UsernameField
+            username={username.username}
+            set_username={(username) => set_username(mkusername(username))}
+            error={username.error}
+          />
           <EmailField
             email={email.email}
             set_email={(email) => set_email(mkemail(email))}
@@ -135,6 +187,7 @@ function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
             disabled={
               !!password.error ||
               !!email.error ||
+              !!username.error ||
               auth_state.type === "signing_up" ||
               auth_state.type === "signing_in"
             }
@@ -144,6 +197,8 @@ function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
             onClick={() => {
               do_sign_up({
                 email: email.email,
+                username: username.username,
+                realname: "", // TODO: add real name field
                 password: sha256(password.password),
               });
             }}
@@ -171,17 +226,17 @@ function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
 }
 
 function SignInForm({ set_sign_up, do_sign_in, auth_state }: sign_in_props) {
-  const [email, set_email] = useState<email_state>(mkemail(""));
+  const [username, set_username] = useState<username_state>(mkusername(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
     <Form
       title="Sign In"
       form={
         <form>
-          <EmailField
-            email={email.email}
-            set_email={(email) => set_email(mkemail(email))}
-            error={email.error}
+          <UsernameField
+            username={username.username}
+            set_username={(username) => set_username(mkusername(username))}
+            error={username.error}
           />
           <PasswordField
             password={password.password}
@@ -191,7 +246,7 @@ function SignInForm({ set_sign_up, do_sign_in, auth_state }: sign_in_props) {
           <Button
             disabled={
               !!password.error ||
-              !!email.error ||
+              !!username.error ||
               auth_state.type === "signing_up" ||
               auth_state.type === "signing_in"
             }
@@ -200,7 +255,7 @@ function SignInForm({ set_sign_up, do_sign_in, auth_state }: sign_in_props) {
             size="large"
             onClick={() =>
               do_sign_in({
-                email: email.email,
+                username: username.username,
                 password: sha256(password.password),
               })
             }

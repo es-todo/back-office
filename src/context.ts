@@ -5,8 +5,13 @@ import { fetch } from "./fetch";
 
 export type Context = {
   auth_state: auth_state;
-  do_sign_up: (credentials: { email: string; password: string }) => void;
-  do_sign_in: (credentials: { email: string; password: string }) => void;
+  do_sign_up: (credentials: {
+    email: string;
+    username: string;
+    password: string;
+    realname: string;
+  }) => void;
+  do_sign_in: (credentials: { username: string; password: string }) => void;
   fetch: fetch;
   commands: broker_state["commands"];
   submit_command: (
