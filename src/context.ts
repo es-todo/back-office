@@ -5,6 +5,7 @@ import { fetch } from "./fetch";
 
 export type Context = {
   auth_state: auth_state;
+  user_id: string | undefined;
   do_sign_up: (credentials: {
     email: string;
     username: string;

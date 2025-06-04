@@ -1,9 +1,16 @@
-import { Avatar, Paper } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Paper,
+} from "@mui/material";
 import { Context } from "./context";
 import { objects } from "./objects";
 import { Spinner } from "./spinner";
 import { TextField } from "./text-field";
 import { useState } from "react";
+import { CommandForm, FormComponent } from "./command-form";
 
 type InternalAdminPageProps = {
   C: Context;
@@ -25,6 +32,75 @@ function Restricted({ C, role, children }: RestrictedProps) {
   } else {
     return null;
   }
+}
+
+type UpdateUserRolesFormProps = {
+  user_id: string;
+  C: Context;
+};
+
+const UpdateUserRolesFormComponent: FormComponent<{
+  user_id: string;
+  roles: role[];
+}> = ({
+  data,
+  editable,
+  // cancel,
+  submit,
+  set_data,
+  C,
+}) => (
+  <>
+    <div>
+      {(Object.keys(all_roles) as role[]).map((role_id) => (
+        <FormControlLabel
+          key={role_id}
+          label={role_id}
+          control={
+            <Checkbox
+              checked={data.roles.includes(role_id)}
+              disabled={
+                !editable || (role_id === "admin" && data.user_id === C.user_id)
+              }
+              onChange={(_event, checked) =>
+                set_data({
+                  ...data,
+                  roles: [
+                    ...data.roles.filter((x) => x !== role_id),
+                    ...(checked ? [role_id] : []),
+                  ],
+                })
+              }
+            />
+          }
+        />
+      ))}
+    </div>
+    <Button fullWidth onClick={submit} disabled={!editable}>
+      Update Roles
+    </Button>
+  </>
+);
+
+function UpdateUserRolesForm({ user_id, C }: UpdateUserRolesFormProps) {
+  const user = C.fetch("user_roles", user_id);
+  if (!user) return <Spinner />;
+  return (
+    <>
+      <CommandForm
+        key={user.roles.join(":")}
+        data_ok={() => true}
+        make_command={({ user_id, roles }) => ({
+          type: "change_user_roles",
+          data: { user_id, roles },
+        })}
+        component={UpdateUserRolesFormComponent}
+        initially_editable={true}
+        initial_data={{ user_id, roles: user.roles }}
+        C={C}
+      />
+    </>
+  );
 }
 
 type SmallUserProfileProps = {
@@ -63,12 +139,13 @@ function stringAvatar(name: string) {
   };
 }
 
-function UserProfileDetails({ user_id }: SmallUserProfileProps) {
+function UserProfileDetails({ user_id, C }: SmallUserProfileProps) {
   return (
     <>
       <div style={{ fontSize: ".7rem" }}>
         UUID: <span style={{ fontFamily: "monospace" }}>{user_id}</span>
       </div>
+      <UpdateUserRolesForm user_id={user_id} C={C} />
     </>
   );
 }
@@ -82,6 +159,7 @@ function SmallUserProfile({ user_id, C }: SmallUserProfileProps) {
       <div
         style={{
           padding: "5px",
+          marginTop: "5px",
           border: "1px solid silver",
           borderRadius: "4px",
         }}
@@ -114,13 +192,12 @@ function ManageRole({ role_id, C }: ManageRoleProps) {
   const user_ids =
     role === undefined ? undefined : role === null ? [] : role.user_ids;
   return (
-    <Paper
-      elevation={elevation}
-      style={{ paddingLeft: "10px", paddingRight: "10px" }}
-    >
-      <h2 style={{ textTransform: "capitalize" }}>{role_id} role</h2>
+    <Paper elevation={elevation} style={{ padding: "10px" }}>
+      <h2 style={{ textTransform: "capitalize", margin: "0px" }}>
+        {role_id} role
+      </h2>
       <p style={{ fontStyle: "italic" }}>
-        {(roles as Record<string, string>)[role_id] ?? null}
+        {(all_roles as Record<string, string>)[role_id] ?? null}
       </p>
       {user_ids === undefined ? (
         <Spinner />
@@ -144,11 +221,10 @@ function SearchUser({ C }: SearchUserProps) {
   const user = C.fetch("username", searchstr);
 
   return (
-    <Paper
-      elevation={elevation}
-      style={{ paddingLeft: "10px", paddingRight: "10px" }}
-    >
-      <h2 style={{ textTransform: "capitalize" }}>Assign Roles</h2>
+    <Paper elevation={elevation} style={{ padding: "10px" }}>
+      <h2 style={{ textTransform: "capitalize", margin: "0px" }}>
+        Assign Roles
+      </h2>
       <TextField
         value={searchstr}
         placeholder="find a user by username"
@@ -166,7 +242,7 @@ function SearchUser({ C }: SearchUserProps) {
   );
 }
 
-const roles: { [k in role]: string } = {
+const all_roles: { [k in role]: string } = {
   admin:
     "Assigns and revokes roles to/from internal users.  Must be used sparingly.",
   "profile-management":
@@ -187,8 +263,16 @@ export function InternalAdminPage({ C }: InternalAdminPageProps) {
           flexWrap: "wrap",
         }}
       >
-        <div style={{ maxWidth: "400px", minWidth: "400px" }}>
-          {Object.keys(roles).map((role_id) => (
+        <div
+          style={{
+            maxWidth: "400px",
+            minWidth: "400px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          {Object.keys(all_roles).map((role_id) => (
             <ManageRole key={role_id} role_id={role_id} C={C} />
           ))}
         </div>

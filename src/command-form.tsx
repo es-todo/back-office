@@ -45,6 +45,7 @@ export type FormComponent<T> = React.FunctionComponent<{
   editable: boolean;
   submit: (() => void) | undefined;
   cancel: () => void;
+  C: Context;
 }>;
 
 type CommandFormProps<T> = {
@@ -74,7 +75,8 @@ export function CommandForm<T>({
         const command = make_command(data);
         const command_uuid = uuidv4();
         set_state({ type: "submitting", command_uuid });
-        C.submit_command(command_uuid, command, () => set_data(initial_data));
+        //C.submit_command(command_uuid, command, () => set_data(initial_data));
+        C.submit_command(command_uuid, command, () => {});
         console.log("Submitting");
       }
     : undefined;
@@ -89,6 +91,7 @@ export function CommandForm<T>({
       set_data={set_data}
       submit={submit}
       cancel={cancel}
+      C={C}
     />
   );
 }

@@ -107,6 +107,10 @@ export function App() {
   }
   const C: Context = {
     auth_state: broker_state.auth_state,
+    user_id:
+      broker_state.auth_state.type === "authenticated"
+        ? broker_state.auth_state.user_id
+        : undefined,
     do_sign_up: (credentials) => broker.do_sign_up(credentials),
     do_sign_in: (credentials) => broker.do_sign_in(credentials),
 
