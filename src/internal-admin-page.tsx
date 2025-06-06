@@ -84,11 +84,12 @@ const UpdateUserRolesFormComponent: FormComponent<{
 
 function UpdateUserRolesForm({ user_id, C }: UpdateUserRolesFormProps) {
   const user = C.fetch("user_roles", user_id);
-  if (!user) return <Spinner />;
+  if (user === undefined) return <Spinner />;
+  const roles = user ? user.roles : [];
   return (
     <>
       <CommandForm
-        key={user.roles.join(":")}
+        key={roles.join(":")}
         data_ok={() => true}
         make_command={({ user_id, roles }) => ({
           type: "change_user_roles",
@@ -96,7 +97,7 @@ function UpdateUserRolesForm({ user_id, C }: UpdateUserRolesFormProps) {
         })}
         component={UpdateUserRolesFormComponent}
         initially_editable={true}
-        initial_data={{ user_id, roles: user.roles }}
+        initial_data={{ user_id, roles }}
         C={C}
       />
     </>
