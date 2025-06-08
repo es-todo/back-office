@@ -64,6 +64,7 @@ type message =
       command_uuid: string;
     }
   | { type: "sign_in"; username: string; password: string }
+  | { type: "sign_out" }
   | { type: "syn"; i: number };
 
 export class Broker {
@@ -233,6 +234,17 @@ export class Broker {
             });
             return;
           }
+          case "signed_out": {
+            localStorage.delete("username");
+            localStorage.delete("password");
+            this.update_state({
+              ...this.state,
+              auth_state: {
+                type: "idle",
+              },
+            });
+            return;
+          }
           case "auth": {
             const auth_state = this.state.auth_state;
             switch (auth_state.type) {
@@ -385,6 +397,16 @@ export class Broker {
         type: "signing_in",
         username,
         password,
+      },
+    });
+  }
+
+  public do_signa_out() {
+    this.send({ type: "sign_out" });
+    this.update_state({
+      ...this.state,
+      auth_state: {
+        type: "signing_out",
       },
     });
   }

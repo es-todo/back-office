@@ -113,6 +113,7 @@ export function App() {
         : undefined,
     do_sign_up: (credentials) => broker.do_sign_up(credentials),
     do_sign_in: (credentials) => broker.do_sign_in(credentials),
+    do_sign_out: () => broker.do_signa_out(),
 
     fetch: fetch,
     commands: broker_state.commands,

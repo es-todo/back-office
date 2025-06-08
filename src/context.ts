@@ -13,6 +13,7 @@ export type Context = {
     realname: string;
   }) => void;
   do_sign_in: (credentials: { username: string; password: string }) => void;
+  do_sign_out: () => void;
   fetch: fetch;
   commands: broker_state["commands"];
   submit_command: (

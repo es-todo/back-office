@@ -9,6 +9,7 @@ export type auth_state =
       email: string;
       password: string;
     }
+  | { type: "signing_out" }
   | { type: "sign_up_error"; error: string }
   | { type: "authenticated"; user_id: string }
   | { type: "signing_in"; username: string; password: string }

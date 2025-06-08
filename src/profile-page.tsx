@@ -1,10 +1,11 @@
-import { Paper } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import { CommandForm, FormComponent } from "./command-form";
 import { Context } from "./context";
 import { LoginForm } from "./login-form";
 import { Spinner } from "./spinner";
 import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
+import { Heading } from "./heading";
 
 const UpdateNameComponent: FormComponent<{
   orig_realname: string;
@@ -57,7 +58,8 @@ function UpdateNameForm({ C, realname }: { C: Context; realname: string }) {
     />
   );
 }
-export function ProfilePageContent({ C }: { C: Context }) {
+
+function ProfilePageContent({ C }: { C: Context }) {
   if (C.auth_state.type === "authenticated") {
     const user = C.fetch("user", C.auth_state.user_id);
     if (!user) return <Spinner />;
@@ -75,4 +77,22 @@ export function ProfilePageContent({ C }: { C: Context }) {
   } else {
     return <LoginForm C={C} />;
   }
+}
+
+export function ProfilePage({ C }: { C: Context }) {
+  return (
+    <>
+      <Heading level={1}>Profile</Heading>
+      <ProfilePageContent C={C} />
+      {C.user_id && (
+        <Button
+          disabled={C.auth_state.type === "signing_out"}
+          onClick={C.do_sign_out}
+        >
+          SIGN OUT
+        </Button>
+      )}
+      <p>This is the main profile area.</p>
+    </>
+  );
 }

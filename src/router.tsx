@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Heading } from "./heading";
-import { ProfilePageContent } from "./profile-page";
+import { ProfilePage } from "./profile-page";
 import { Context } from "./context";
 import { InternalAdminPage } from "./internal-admin-page";
 import { VerifyEmailPage } from "./verify-email-page";
@@ -24,16 +24,6 @@ function Settings() {
   );
 }
 
-function Profile({ C }: { C: Context }) {
-  return (
-    <>
-      <Heading>Profile</Heading>
-      <ProfilePageContent C={C} />
-      <p>This is the main profile area.</p>
-    </>
-  );
-}
-
 function NotFoundPage() {
   return (
     <>
@@ -50,7 +40,7 @@ export function Router(props: { connected: boolean; C: Context }) {
       <Route path="/" element={<Home connected={connected} />} />
       <Route path="/dashboard" element={<Home connected={connected} />} />
       <Route path="/settings" element={<Settings />} />
-      <Route path="/profile" element={<Profile C={C} />} />
+      <Route path="/profile" element={<ProfilePage C={C} />} />
       <Route path="/verify-email/:code" element={<VerifyEmailPage C={C} />} />
       <Route path="/internal/admin" element={<InternalAdminPage C={C} />} />
       <Route path="*" element={<NotFoundPage />} />
