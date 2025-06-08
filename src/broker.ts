@@ -235,8 +235,8 @@ export class Broker {
             return;
           }
           case "signed_out": {
-            localStorage.delete("username");
-            localStorage.delete("password");
+            localStorage.removeItem("username");
+            localStorage.removeItem("password");
             this.update_state({
               ...this.state,
               auth_state: {
