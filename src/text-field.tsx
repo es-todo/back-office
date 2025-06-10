@@ -5,6 +5,7 @@ type TextFieldProps = {
   editable: boolean;
   value: string;
   set_value: (value: string) => void;
+  error?: string | undefined;
 };
 
 export function TextField({
@@ -12,6 +13,7 @@ export function TextField({
   editable,
   value,
   set_value,
+  error,
 }: TextFieldProps) {
   return (
     <MuiTextField
@@ -21,6 +23,8 @@ export function TextField({
       disabled={!editable}
       value={value}
       onChange={(e) => set_value(e.target.value)}
+      error={error !== undefined}
+      helperText={error}
     />
   );
 }

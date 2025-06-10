@@ -4,6 +4,7 @@ import { LoginForm } from "./login-form";
 import { Spinner } from "./spinner";
 import { Heading } from "./heading";
 import { UpdateRealNameForm } from "./update-real-name-form";
+import { UpdateUserNameForm } from "./update-username-form";
 
 export function ProfilePageContentForUser({
   C,
@@ -23,6 +24,8 @@ export function ProfilePageContentForUser({
         realname={user.realname}
         C={C}
       />
+      <h2>Change your username:</h2>
+      <UpdateUserNameForm user_id={user_id} C={C} />
     </>
   ) : (
     <>

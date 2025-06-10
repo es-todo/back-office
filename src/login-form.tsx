@@ -102,7 +102,7 @@ type email_state = {
   error: string | undefined;
 };
 
-type username_state = {
+export type username_state = {
   username: string;
   error: string | undefined;
 };
@@ -121,7 +121,7 @@ function mkemail(email: string): email_state {
   return { email, error: "Invalid email!" };
 }
 
-function mkusername(username: string): username_state {
+export function mkusername(username: string): username_state {
   username = username.replace(/\s/m, "").toLowerCase();
   if (username === "") return { username: "", error: "Required" };
   const m = username.match(/[^a-zA-Z0-9_-]/);
