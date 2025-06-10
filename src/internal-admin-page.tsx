@@ -6,33 +6,15 @@ import {
   Paper,
 } from "@mui/material";
 import { Context } from "./context";
-import { objects } from "./objects";
 import { Spinner } from "./spinner";
 import { TextField } from "./text-field";
 import { useState } from "react";
 import { CommandForm, FormComponent } from "./command-form";
+import { Restricted, role } from "./restricted";
 
 type InternalAdminPageProps = {
   C: Context;
 };
-
-type role = objects["user_roles"]["roles"][0];
-
-type RestrictedProps = {
-  role: role;
-  C: Context;
-} & React.PropsWithChildren;
-
-function Restricted({ C, role, children }: RestrictedProps) {
-  if (C.auth_state.type !== "authenticated") return null;
-  const user_id = C.auth_state.user_id;
-  const user = C.fetch("user_roles", user_id);
-  if (user && user.roles.includes(role)) {
-    return children;
-  } else {
-    return null;
-  }
-}
 
 type UpdateUserRolesFormProps = {
   user_id: string;

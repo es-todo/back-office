@@ -43,13 +43,21 @@ const UpdateNameComponent: FormComponent<{
   </Paper>
 );
 
-function UpdateNameForm({ C, realname }: { C: Context; realname: string }) {
+function UpdateRealNameForm({
+  user_id,
+  realname,
+  C,
+}: {
+  user_id: string;
+  realname: string;
+  C: Context;
+}) {
   return (
     <CommandForm
       data_ok={({ new_realname }) => new_realname.length > 0}
       make_command={({ new_realname }) => ({
         type: "change_realname",
-        data: { new_realname },
+        data: { user_id, new_realname },
       })}
       component={UpdateNameComponent}
       initially_editable={true}
@@ -59,21 +67,36 @@ function UpdateNameForm({ C, realname }: { C: Context; realname: string }) {
   );
 }
 
+export function ProfilePageContentForUser({
+  C,
+  user_id,
+}: {
+  user_id: string;
+  C: Context;
+}) {
+  const user = C.fetch("user", user_id);
+  if (!user) return <Spinner />;
+  return user.realname ? (
+    <>
+      <h1>Welcome {user.realname} 👋</h1>
+      <UpdateRealNameForm
+        key={user.realname}
+        user_id={user_id}
+        realname={user.realname}
+        C={C}
+      />
+    </>
+  ) : (
+    <>
+      <h1>Let us know who you are.</h1>
+      <UpdateRealNameForm key="" user_id={user_id} realname="" C={C} />
+    </>
+  );
+}
+
 function ProfilePageContent({ C }: { C: Context }) {
   if (C.auth_state.type === "authenticated") {
-    const user = C.fetch("user", C.auth_state.user_id);
-    if (!user) return <Spinner />;
-    return user.realname ? (
-      <>
-        <h1>Welcome {user.realname} 👋</h1>
-        <UpdateNameForm key={user.realname} C={C} realname={user.realname} />
-      </>
-    ) : (
-      <>
-        <h1>Let us know who you are.</h1>
-        <UpdateNameForm key="" C={C} realname="" />
-      </>
-    );
+    return <ProfilePageContentForUser user_id={C.auth_state.user_id} C={C} />;
   } else {
     return <LoginForm C={C} />;
   }
