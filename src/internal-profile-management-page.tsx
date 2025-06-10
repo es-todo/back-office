@@ -14,7 +14,7 @@ type SearchUserProps = {
 
 function SearchUser({ C }: SearchUserProps) {
   const [searchstr, set_searchstr] = useState("");
-  const user = C.fetch("username", searchstr);
+  const user = C.fetch("username_redirect", searchstr);
   return (
     <>
       <Paper elevation={elevation} style={{ padding: "10px" }}>

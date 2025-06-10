@@ -114,6 +114,7 @@ function stringToColor(string: string) {
 
 // from https://mui.com/material-ui/react-avatar/
 function stringAvatar(name: string) {
+  name = name.toUpperCase();
   return {
     sx: {
       bgcolor: stringToColor(name),
@@ -148,9 +149,11 @@ function SmallUserProfile({ user_id, C }: SmallUserProfileProps) {
         }}
       >
         <Avatar {...stringAvatar(user.username || user.realname || "?")} />
+        <div>
+          Username: <span style={{ fontWeight: "bold" }}>@{user.username}</span>
+        </div>
         <div>Name: {user.realname}</div>
         <div>Email: {user.email}</div>
-        <div>Username: @{user.username}</div>
         <div
           style={{ cursor: "pointer", height: "20px", textAlign: "center" }}
           onClick={() => set_detailed(!detailed)}
@@ -201,7 +204,7 @@ type SearchUserProps = {
 
 function SearchUser({ C }: SearchUserProps) {
   const [searchstr, set_searchstr] = useState("");
-  const user = C.fetch("username", searchstr);
+  const user = C.fetch("username_redirect", searchstr);
 
   return (
     <Paper elevation={elevation} style={{ padding: "10px" }}>
