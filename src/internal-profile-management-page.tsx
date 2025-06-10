@@ -30,7 +30,25 @@ function SearchUser({ C }: SearchUserProps) {
         ) : user === null ? (
           <>No exact match for @{searchstr}</>
         ) : (
-          <div style={{ fontFamily: "monospace" }}>UUID: {user.user_id}</div>
+          <div>
+            <div style={{ fontFamily: "monospace", fontSize: "small" }}>
+              UUID: {user.user_id}
+            </div>
+            <div
+              style={{
+                backgroundColor: "red",
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
+              User profile follows. Proceed with caution and don't change things
+              you don't need to change. This is a privileged functionality and
+              is monitored and logged.
+              <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
+            </div>
+          </div>
         )}
       </Paper>
       {user && (
