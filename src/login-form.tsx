@@ -113,6 +113,7 @@ type password_state = {
 };
 
 function mkemail(email: string): email_state {
+  email = email.toLowerCase();
   if (email === "") return { email: "", error: "Required" };
   if (email_valid(email)) {
     return { email, error: undefined };
@@ -121,7 +122,7 @@ function mkemail(email: string): email_state {
 }
 
 function mkusername(username: string): username_state {
-  username = username.replace(/\s/m, "");
+  username = username.replace(/\s/m, "").toLowerCase();
   if (username === "") return { username: "", error: "Required" };
   const m = username.match(/[^a-zA-Z0-9_-]/);
   if (m) {
