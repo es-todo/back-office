@@ -11,7 +11,7 @@ type signup_params = {
   password: string;
 };
 
-type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
+export type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
 
 type object_state =
   | { type: "fetching" }

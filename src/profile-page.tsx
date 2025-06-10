@@ -4,7 +4,7 @@ import { LoginForm } from "./login-form";
 import { Spinner } from "./spinner";
 import { Heading } from "./heading";
 import { UpdateRealNameForm } from "./update-real-name-form";
-import { UpdateUserNameForm } from "./update-username-form";
+import { TextField } from "./text-field";
 
 export function ProfilePageContentForUser({
   C,
@@ -18,6 +18,53 @@ export function ProfilePageContentForUser({
   return user.realname ? (
     <>
       <h1>Welcome {user.realname} 👋</h1>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          height: undefined,
+          overflowY: "hidden",
+        }}
+      >
+        <Button
+          onClick={() =>
+            C.open_dialog({
+              title: "Change Username",
+              body_text: "Change your user name to a new special name.",
+              fields: {
+                username: {
+                  value: "",
+                  setter: (value) => {
+                    if (value.length === 0) {
+                      return { error: "Required" };
+                    } else {
+                      return { value: value.toLowerCase() };
+                    }
+                  },
+                  render: ({ value, set_value, error }) => (
+                    <TextField
+                      editable={true}
+                      value={value}
+                      set_value={set_value}
+                      error={error}
+                      required
+                      label="Username:"
+                    />
+                  ),
+                },
+              },
+              submit: ({ username }) => ({
+                type: "change_username",
+                data: { user_id, new_username: username },
+              }),
+            })
+          }
+        >
+          Update Username
+        </Button>
+      </div>
+
       <UpdateRealNameForm
         key={user.realname}
         user_id={user_id}
@@ -25,7 +72,6 @@ export function ProfilePageContentForUser({
         C={C}
       />
       <h2>Change your username:</h2>
-      <UpdateUserNameForm user_id={user_id} C={C} />
     </>
   ) : (
     <>

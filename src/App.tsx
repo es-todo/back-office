@@ -18,6 +18,8 @@ import { UserBoards } from "./user-boards.tsx";
 import { fetch } from "./fetch.ts";
 import { uuidv4 } from "./uuidv4.ts";
 import { Context } from "./context.ts";
+import { CommandDialog, dialog } from "./form-dialog.tsx";
+import { command_type } from "schemata/generated/command_type";
 
 const url = location.protocol + "//" + location.hostname + ":" + location.port;
 
@@ -105,6 +107,8 @@ export function App() {
       command_forms.filter((x) => x.command_uuid !== top_command_uuid)
     );
   }
+
+  const [dialogs, set_dialogs] = useState<dialog[]>([]);
   const C: Context = {
     auth_state: broker_state.auth_state,
     user_id:
@@ -126,9 +130,61 @@ export function App() {
         },
         on_done
       ),
+    open_dialog: (args) => {
+      set_dialogs([
+        {
+          spec: args as any,
+          command_uuid: undefined,
+          values: Object.fromEntries(
+            Object.entries(args.fields).map(([k, v]: [k: string, v: any]) => {
+              const res = v.setter(v.value);
+              return [
+                k,
+                res.error
+                  ? { error: res.error, value: v.value }
+                  : { error: undefined, value: v.value },
+              ];
+            })
+          ),
+        },
+        ...dialogs,
+      ]);
+    },
   };
+
+  const top_dialog = dialogs[0];
+  const top_dialog_uuid = top_dialog?.command_uuid;
+  const top_dialog_status =
+    top_dialog_uuid === undefined
+      ? undefined
+      : broker_state.commands[top_dialog_uuid];
+  if (top_dialog_status === "succeeded") {
+    set_dialogs(dialogs.filter((x) => x.command_uuid !== top_dialog_uuid));
+  }
+
   return (
     <>
+      <CommandDialog
+        dialog={top_dialog}
+        cancel={() => set_dialogs(dialogs.filter((x) => x !== top_dialog))}
+        update={(values) =>
+          set_dialogs(
+            dialogs.map((x) => (x === top_dialog ? { ...x, values } : x))
+          )
+        }
+        submit={(command: command_type) => {
+          const command_uuid = uuidv4();
+          broker.submit_command({
+            command_uuid,
+            command_type: command.type,
+            command_data: command.data,
+          });
+          set_dialogs(
+            dialogs.map((x) => (x === top_dialog ? { ...x, command_uuid } : x))
+          );
+        }}
+        status={top_dialog_status}
+      />
       <Modal open={top_command && top_command_status !== "succeeded"}>
         <Box sx={modalstyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
