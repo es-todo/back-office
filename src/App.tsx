@@ -3,16 +3,7 @@ import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
-import {
-  Box,
-  Button,
-  CssBaseline,
-  Modal,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material";
-import { command_dialog_form } from "./command-dialog-form.ts";
+import { Box, CssBaseline, styled } from "@mui/material";
 import { LoginForm } from "./login-form.tsx";
 import { UserBoards } from "./user-boards.tsx";
 import { fetch } from "./fetch.ts";
@@ -31,18 +22,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
   justifyContent: "flex-end",
 }));
-
-const modalstyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 1,
-};
 
 export function App() {
   const [broker_state, set_broker_state] = useState(initial_broker_state);
@@ -79,34 +58,11 @@ export function App() {
     },
     [broker_state, broker]
   );
-  const ping = fetch("counter", "ping");
-
-  const [command_forms, set_command_forms] = useState<command_dialog_form[]>(
-    []
-  );
 
   useEffect(() => {
     return () => broker.terminate();
   }, [broker]);
   const [open, set_open] = useState(false);
-  const open_command_dialog = (
-    command_form: Omit<command_dialog_form, "command_uuid" | "values">
-  ) =>
-    set_command_forms([
-      { ...command_form, command_uuid: undefined, values: {} },
-      ...command_forms,
-    ]);
-  const top_command = command_forms[0];
-  const top_command_uuid = top_command?.command_uuid;
-  const top_command_status =
-    top_command_uuid === undefined
-      ? undefined
-      : broker_state.commands[top_command_uuid];
-  if (top_command_status === "succeeded") {
-    set_command_forms(
-      command_forms.filter((x) => x.command_uuid !== top_command_uuid)
-    );
-  }
 
   const [dialogs, set_dialogs] = useState<dialog[]>([]);
   const C: Context = {
@@ -185,41 +141,6 @@ export function App() {
         }}
         status={top_dialog_status}
       />
-      <Modal open={top_command && top_command_status !== "succeeded"}>
-        <Box sx={modalstyle}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            {top_command?.command_type ?? null}
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            fields go here
-          </Typography>
-          <Typography>{top_command_status ?? null}</Typography>
-          <Stack
-            direction="row"
-            sx={{ width: "100%" }}
-            justifyContent="flex-end"
-          >
-            <Button onClick={() => set_command_forms(command_forms.slice(1))}>
-              Close
-            </Button>
-            <Button
-              disabled={command_forms[0]?.command_uuid !== undefined}
-              onClick={() => {
-                const [form, ...other_forms] = command_forms;
-                const command_uuid = uuidv4();
-                set_command_forms([{ ...form, command_uuid }, ...other_forms]);
-                broker.submit_command({
-                  command_uuid,
-                  command_type: form.command_type,
-                  command_data: form.values,
-                });
-              }}
-            >
-              Submit
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <TitleBar open={open} toggle={() => set_open(!open)} />
@@ -228,13 +149,6 @@ export function App() {
           <DrawerHeader />
           <Box sx={{ p: 2 }}>
             <Router connected={broker_state.connected} C={C} />
-            <Button
-              onClick={() =>
-                open_command_dialog({ command_type: "ping", fields: [] })
-              }
-            >
-              Ping {ping?.count ?? null}!
-            </Button>
             {broker_state.auth_state.type === "authenticated" ? (
               <UserBoards user_id={broker_state.auth_state.user_id} C={C} />
             ) : (
