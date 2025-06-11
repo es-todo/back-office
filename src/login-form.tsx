@@ -8,7 +8,6 @@ import {
 import { JSX, useState } from "react";
 import { Context } from "./context";
 import { sha256 } from "js-sha256";
-import { auth_state } from "./auth-state";
 import { uuidv4 } from "./uuidv4";
 import { TextField } from "./text-field";
 import { MessageDeliveryUI } from "./message-delivery-ui";
@@ -93,21 +92,17 @@ function UsernameField(props: UsernameFieldProps) {
 }
 
 type sign_in_props = {
-  auth_state: auth_state;
   set_sign_up: (sign_up: boolean) => void;
-  do_sign_in: (credentials: { username: string; password: string }) => void;
+  message_id: string | undefined;
+  set_message_id: (message_id: string) => void;
   C: Context;
 };
 
 type sign_up_props = {
-  auth_state: auth_state;
   set_sign_up: (sign_up: boolean) => void;
-  do_sign_up: (credentials: {
-    email: string;
-    username: string;
-    realname: string;
-    password: string;
-  }) => void;
+  message_id: string | undefined;
+  set_message_id: (message_id: string) => void;
+  C: Context;
 };
 
 type email_state = {
@@ -173,201 +168,195 @@ function Form(props: {
   );
 }
 
-function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
+function SignUpForm({ C }: sign_up_props) {
+  const { auth_state } = C;
   const [email, set_email] = useState<email_state>(mkemail(""));
   const [username, set_username] = useState<username_state>(mkusername(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
   return (
-    <Form
-      title="Sign Up"
-      form={
-        <form>
-          <UsernameField
-            username={username.username}
-            set_username={(username) => set_username(mkusername(username))}
-            error={username.error}
-          />
-          <EmailField
-            email={email.email}
-            set_email={(email) => set_email(mkemail(email))}
-            error={email.error}
-          />
-          <PasswordField
-            password={password.password}
-            error={password.error}
-            set_password={(password) => set_password(mkpassword(password))}
-          />
-          <Button
-            disabled={
-              !!password.error ||
-              !!email.error ||
-              !!username.error ||
-              auth_state.type === "signing_up" ||
-              auth_state.type === "signing_in"
-            }
-            fullWidth
-            color="primary"
-            size="large"
-            onClick={() => {
-              do_sign_up({
-                email: email.email,
-                username: username.username,
-                realname: "", // TODO: add real name field
-                password: sha256(password.password),
-              });
-            }}
-          >
-            Sign Up
-          </Button>
-          {auth_state.type === "sign_up_error" && (
-            <>
-              Error signing up. Please check that your email is not already
-              registered.
-            </>
-          )}
-        </form>
-      }
-      footer={
-        <>
-          Already registed?{" "}
-          <Button onClick={() => set_sign_up(false)} size="small">
-            Sign In
-          </Button>
-        </>
-      }
-    />
+    <form>
+      <UsernameField
+        username={username.username}
+        set_username={(username) => set_username(mkusername(username))}
+        error={username.error}
+      />
+      <EmailField
+        email={email.email}
+        set_email={(email) => set_email(mkemail(email))}
+        error={email.error}
+      />
+      <PasswordField
+        password={password.password}
+        error={password.error}
+        set_password={(password) => set_password(mkpassword(password))}
+      />
+      <Button
+        disabled={
+          !!password.error ||
+          !!email.error ||
+          !!username.error ||
+          auth_state.type === "signing_up" ||
+          auth_state.type === "signing_in"
+        }
+        fullWidth
+        color="primary"
+        size="large"
+        onClick={() => {
+          C.do_sign_up({
+            email: email.email,
+            username: username.username,
+            realname: "", // TODO: add real name field
+            password: sha256(password.password),
+          });
+        }}
+      />
+    </form>
   );
 }
 
-function SignInForm({ set_sign_up, do_sign_in, auth_state, C }: sign_in_props) {
-  const [username, set_username] = useState<username_state>(mkusername(""));
-  const [password, set_password] = useState<password_state>(mkpassword(""));
-  const [message_id, set_message_id] = useState("");
+function ForgotPassword({
+  set_message_id,
+  C,
+}: {
+  set_message_id: (message_id: string) => void;
+  C: Context;
+}) {
   return (
     <>
-      <Form
-        title="Sign In"
-        form={
-          <form>
-            <UsernameField
-              username={username.username}
-              set_username={(username) => set_username(mkusername(username))}
-              error={username.error}
-            />
-            <PasswordField
-              password={password.password}
-              error={password.error}
-              set_password={(password) => set_password(mkpassword(password))}
-            />
-            <Button
-              disabled={
-                !!password.error ||
-                !!username.error ||
-                auth_state.type === "signing_up" ||
-                auth_state.type === "signing_in"
-              }
-              fullWidth
-              color="primary"
-              size="large"
-              onClick={() =>
-                do_sign_in({
-                  username: username.username,
-                  password: sha256(password.password),
-                })
-              }
-            >
-              Sign In
-            </Button>
-            {auth_state.type === "sign_in_error" && (
-              <>
-                Error signing in. Please check that you typed your email and
-                password correctly.
-              </>
-            )}
-          </form>
-        }
-        footer={
-          <>
-            Not registed?{" "}
-            <Button size="small" onClick={() => set_sign_up(true)}>
-              Sign Up
-            </Button>
-            <br />
-            Forgot your password?{" "}
-            <Button
-              size="small"
-              onClick={() => {
-                C.open_dialog({
-                  title: "Reset your password",
-                  body_text:
-                    "Please type youe username or the email you used when you signed up.  We will send you an email with a link to reset your password.",
-                  fields: {
-                    email_or_username: {
-                      value: "",
-                      setter: (value) => {
-                        if (value.length === 0) {
-                          return { error: "Required" };
-                        }
-                        if (value.length < 4) {
-                          return { error: "too short" };
-                        }
-                        return { value };
-                      },
-                      render: ({ value, set_value, error }) => (
-                        <TextField
-                          value={value}
-                          set_value={set_value}
-                          error={error}
-                          label="Username or Email"
-                          editable
-                        />
-                      ),
-                    },
-                  },
-                  submit: ({ email_or_username }) => {
-                    const message_id = uuidv4();
-                    set_message_id(message_id);
-                    return {
-                      type: "request_password_reset_code",
-                      data: {
-                        message_id,
-                        email_or_username,
-                      },
-                    };
-                  },
-                });
-              }}
-            >
-              Reset It
-            </Button>
-          </>
-        }
-      />
-      <MessageDeliveryUI message_id={message_id} C={C} />
+      Forgot your password?
+      <Button
+        size="small"
+        onClick={() => {
+          C.open_dialog({
+            title: "Reset your password",
+            body_text:
+              "Please type youe username or the email you used when you signed up.  We will send you an email with a link to reset your password.",
+            fields: {
+              email_or_username: {
+                value: "",
+                setter: (value) => {
+                  if (value.length === 0) {
+                    return { error: "Required" };
+                  }
+                  if (value.length < 4) {
+                    return { error: "too short" };
+                  }
+                  return { value };
+                },
+                render: ({ value, set_value, error }) => (
+                  <TextField
+                    value={value}
+                    set_value={set_value}
+                    error={error}
+                    label="Username or Email"
+                    editable
+                  />
+                ),
+              },
+            },
+            submit: ({ email_or_username }) => {
+              const message_id = uuidv4();
+              set_message_id(message_id);
+              return {
+                type: "request_password_reset_code",
+                data: {
+                  message_id,
+                  email_or_username,
+                },
+              };
+            },
+          });
+        }}
+      >
+        Reset It
+      </Button>
     </>
   );
 }
 
+function SignInForm({ C }: sign_in_props) {
+  const { auth_state } = C;
+  const [username, set_username] = useState<username_state>(mkusername(""));
+  const [password, set_password] = useState<password_state>(mkpassword(""));
+  return (
+    <form>
+      <UsernameField
+        username={username.username}
+        set_username={(username) => set_username(mkusername(username))}
+        error={username.error}
+      />
+      <PasswordField
+        password={password.password}
+        error={password.error}
+        set_password={(password) => set_password(mkpassword(password))}
+      />
+      <Button
+        disabled={
+          !!password.error ||
+          !!username.error ||
+          auth_state.type === "signing_up" ||
+          auth_state.type === "signing_in"
+        }
+        fullWidth
+        color="primary"
+        size="large"
+        onClick={() =>
+          C.do_sign_in({
+            username: username.username,
+            password: sha256(password.password),
+          })
+        }
+      >
+        Sign In
+      </Button>
+      {auth_state.type === "sign_in_error" && (
+        <>
+          Error signing in. Please check that you typed your email and password
+          correctly.
+        </>
+      )}
+    </form>
+  );
+}
+
 export function LoginForm({ C }: { C: Context }) {
-  const { auth_state, do_sign_up, do_sign_in } = C;
+  const { auth_state } = C;
   if (auth_state.type === "authenticated") return null;
   const [sign_up, set_sign_up] = useState(true);
+  const [message_id, set_message_id] = useState("");
   return (
     <div>
-      {sign_up ? (
-        <SignUpForm
-          set_sign_up={set_sign_up}
-          do_sign_up={do_sign_up}
-          auth_state={auth_state}
-        />
-      ) : (
-        <SignInForm
-          set_sign_up={set_sign_up}
-          do_sign_in={do_sign_in}
-          auth_state={auth_state}
-          C={C}
-        />
-      )}
+      <Form
+        title={sign_up ? "Sign Up" : "Sign In"}
+        form={
+          sign_up ? (
+            <SignUpForm
+              set_sign_up={set_sign_up}
+              message_id={message_id}
+              set_message_id={set_message_id}
+              C={C}
+            />
+          ) : (
+            <SignInForm
+              set_sign_up={set_sign_up}
+              message_id={message_id}
+              set_message_id={set_message_id}
+              C={C}
+            />
+          )
+        }
+        footer={
+          <>
+            {sign_up ? "Already registered?" : "Not registered?"}
+            <Button size="small" onClick={() => set_sign_up(!sign_up)}>
+              {sign_up ? "Sign In" : "Sign Up"}
+            </Button>
+            <br />
+            <ForgotPassword set_message_id={set_message_id} C={C} />
+            <MessageDeliveryUI message_id={message_id} C={C} />
+          </>
+        }
+      ></Form>
     </div>
   );
 }
