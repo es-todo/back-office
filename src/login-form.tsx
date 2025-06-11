@@ -246,7 +246,7 @@ function ForgotPassword({
                 render: ({ value, set_value, error }) => (
                   <TextField
                     value={value}
-                    set_value={set_value}
+                    set_value={(x) => set_value(x.toLowerCase())}
                     error={error}
                     label="Username or Email"
                     editable
