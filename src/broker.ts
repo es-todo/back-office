@@ -3,12 +3,19 @@ import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 import { type auth_state } from "./auth-state";
 
-type credentials = { username: string; password: string };
+export type credentials = { username: string; password: string };
+
 type signup_params = {
   email: string;
   username: string;
   realname: string;
   password: string;
+};
+
+type reset_password_params = {
+  code: string;
+  password: string;
+  username: string;
 };
 
 export type command_status_type = "queued" | "succeeded" | "failed" | "aborted";
@@ -65,7 +72,20 @@ type message =
     }
   | { type: "sign_in"; username: string; password: string }
   | { type: "sign_out" }
+  | {
+      type: "reset_password";
+      command_uuid: string;
+      code: string;
+      password: string;
+    }
   | { type: "syn"; i: number };
+
+type broker_constructor_params = {
+  url: string;
+  set_state: (state: broker_state) => void;
+  set_credentials: (credentials: credentials | undefined) => void;
+  get_credentials: () => credentials | undefined;
+};
 
 export class Broker {
   private url: string;
@@ -78,9 +98,18 @@ export class Broker {
   private state: broker_state = initial_broker_state;
   private on_state_change: (state: broker_state) => void;
   private command_callbacks: { [command_uuid: string]: () => void } = {};
+  private set_credentials: (credentials: credentials | undefined) => void;
+  private get_credentials: () => credentials | undefined;
 
-  constructor(url: string, set_state: (state: broker_state) => void) {
+  constructor({
+    url,
+    set_state,
+    get_credentials,
+    set_credentials,
+  }: broker_constructor_params) {
     this.url = url;
+    this.get_credentials = get_credentials;
+    this.set_credentials = set_credentials;
     this.on_state_change = set_state;
     this.keep_connection();
   }
@@ -151,10 +180,9 @@ export class Broker {
             console.log({ is_new });
             if (is_new) {
               // if we have a saved email/password, login
-              const username = localStorage.getItem("username");
-              const password = localStorage.getItem("password");
-              if (username && password) {
-                this.do_sign_in({ username, password });
+              const credentials = this.get_credentials();
+              if (credentials) {
+                this.do_sign_in(credentials);
               }
               // objects might be stale now.
               // all previously fetched objects must be refetched
@@ -235,8 +263,7 @@ export class Broker {
             return;
           }
           case "signed_out": {
-            localStorage.removeItem("username");
-            localStorage.removeItem("password");
+            this.set_credentials(undefined);
             this.update_state({
               ...this.state,
               auth_state: {
@@ -249,10 +276,10 @@ export class Broker {
             const auth_state = this.state.auth_state;
             switch (auth_state.type) {
               case "signing_up":
-              case "signing_in": {
+              case "signing_in":
+              case "resetting_password": {
                 const { username, password } = auth_state;
-                localStorage.setItem("username", username);
-                localStorage.setItem("password", password);
+                this.set_credentials({ username, password });
               }
             }
             const { user_id } = message as { user_id: string };
@@ -384,6 +411,30 @@ export class Broker {
         username,
         realname,
         email,
+        password,
+      },
+    });
+  }
+
+  public do_reset_password({
+    code,
+    username,
+    password,
+  }: reset_password_params) {
+    const command_uuid = uuidv4();
+    this.send({
+      type: "reset_password",
+      command_uuid,
+      code,
+      password,
+    });
+    this.update_state({
+      ...this.state,
+      auth_state: {
+        type: "resetting_password",
+        command_uuid,
+        username,
+        code,
         password,
       },
     });

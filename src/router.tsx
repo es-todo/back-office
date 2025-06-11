@@ -5,6 +5,7 @@ import { Context } from "./context";
 import { InternalAdminPage } from "./internal-admin-page";
 import { VerifyEmailPage } from "./verify-email-page";
 import { InternalProfileManagementPage } from "./internal-profile-management-page";
+import { ResetPasswordPage } from "./reset-password-page";
 
 function Home({ connected }: { connected: boolean }) {
   return (
@@ -43,6 +44,10 @@ export function Router(props: { connected: boolean; C: Context }) {
       <Route path="/settings" element={<Settings />} />
       <Route path="/profile" element={<ProfilePage C={C} />} />
       <Route path="/verify-email/:code" element={<VerifyEmailPage C={C} />} />
+      <Route
+        path="/reset-password/:code"
+        element={<ResetPasswordPage C={C} />}
+      />
       <Route path="/internal/admin" element={<InternalAdminPage C={C} />} />
       <Route
         path="/internal/profile-management"

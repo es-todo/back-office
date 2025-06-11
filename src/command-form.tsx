@@ -54,6 +54,7 @@ type CommandFormProps<T> = {
   make_command: (data: T) => command_type;
   component: FormComponent<T>;
   initially_editable: boolean;
+  on_success?: (data: T) => void;
   C: Context;
 };
 
@@ -63,6 +64,7 @@ export function CommandForm<T>({
   make_command,
   component: Component,
   initially_editable,
+  on_success,
   C,
 }: CommandFormProps<T>) {
   const [state, set_state] = useState<form_state>(
@@ -76,7 +78,9 @@ export function CommandForm<T>({
         const command_uuid = uuidv4();
         set_state({ type: "submitting", command_uuid });
         //C.submit_command(command_uuid, command, () => set_data(initial_data));
-        C.submit_command(command_uuid, command, () => {});
+        C.submit_command(command_uuid, command, () => {
+          if (on_success) on_success(data);
+        });
         console.log("Submitting");
       }
     : undefined;

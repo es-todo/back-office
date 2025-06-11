@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Broker, initial_broker_state } from "./broker.ts";
+import { Broker, credentials, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
 import { Box, CssBaseline, styled } from "@mui/material";
-import { LoginForm } from "./login-form.tsx";
-import { UserBoards } from "./user-boards.tsx";
 import { fetch } from "./fetch.ts";
 import { uuidv4 } from "./uuidv4.ts";
 import { Context } from "./context.ts";
@@ -23,17 +21,49 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
+function set_credentials(credentials: credentials | undefined) {
+  if (credentials) {
+    const { username, password } = credentials;
+    localStorage.setItem("username", username);
+    localStorage.setItem("password", password);
+  } else {
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+  }
+}
+
+function get_credentials() {
+  const username = localStorage.getItem("username");
+  const password = localStorage.getItem("password");
+  if (username && password) {
+    return { username, password };
+  } else {
+    return undefined;
+  }
+}
+
+//// remove the stored password (if any) if you land on reset-password
+//if (location.pathname.startsWith("/reset-password/")) {
+//  console.log("deleting password");
+//  set_credentials(undefined);
+//}
+
 export function App() {
   const [broker_state, set_broker_state] = useState(initial_broker_state);
   let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
   const broker = useMemo(
     () =>
-      new Broker(url, (state) => {
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          set_broker_state(state);
-          timeout = undefined;
-        }, 0);
+      new Broker({
+        url,
+        set_state: (state) => {
+          if (timeout) clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            set_broker_state(state);
+            timeout = undefined;
+          }, 0);
+        },
+        get_credentials,
+        set_credentials,
       }),
     []
   );
@@ -74,6 +104,7 @@ export function App() {
     do_sign_up: (credentials) => broker.do_sign_up(credentials),
     do_sign_in: (credentials) => broker.do_sign_in(credentials),
     do_sign_out: () => broker.do_signa_out(),
+    do_reset_password: (args) => broker.do_reset_password(args),
 
     fetch: fetch,
     commands: broker_state.commands,
@@ -149,11 +180,6 @@ export function App() {
           <DrawerHeader />
           <Box sx={{ p: 2 }}>
             <Router connected={broker_state.connected} C={C} />
-            {broker_state.auth_state.type === "authenticated" ? (
-              <UserBoards user_id={broker_state.auth_state.user_id} C={C} />
-            ) : (
-              <LoginForm C={C} />
-            )}
           </Box>
         </Box>
       </Box>

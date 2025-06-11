@@ -1,23 +1,35 @@
 import { validate as email_valid } from "email-validator";
-import { Button, Divider, Paper, TextField } from "@mui/material";
+import {
+  Button,
+  Divider,
+  Paper,
+  TextField as MuiTextField,
+} from "@mui/material";
 import { JSX, useState } from "react";
 import { Context } from "./context";
 import { sha256 } from "js-sha256";
 import { auth_state } from "./auth-state";
+import { uuidv4 } from "./uuidv4";
+import { TextField } from "./text-field";
+import { MessageDeliveryUI } from "./message-delivery-ui";
 
 type PasswordFieldProps = {
   password: string;
   set_password: (password: string) => void;
   error: string | undefined;
+  auto_complete?: boolean;
+  label?: string | undefined;
 };
 
-function PasswordField(props: PasswordFieldProps) {
+export function PasswordField(props: PasswordFieldProps) {
   const { password, set_password, error } = props;
   return (
-    <TextField
+    <MuiTextField
       type="password"
       name="password"
-      autoComplete="current-password"
+      autoComplete={
+        props.auto_complete === false ? undefined : "current-password"
+      }
       required
       fullWidth
       value={password}
@@ -25,7 +37,7 @@ function PasswordField(props: PasswordFieldProps) {
       error={password !== "" && error !== undefined}
       helperText={error}
       margin="dense"
-      label="Password"
+      label={props.label ?? "Password"}
     />
   );
 }
@@ -39,7 +51,7 @@ type EmailFieldProps = {
 function EmailField(props: EmailFieldProps) {
   const { email, set_email, error } = props;
   return (
-    <TextField
+    <MuiTextField
       type="text"
       name="email"
       autoComplete="current-email"
@@ -64,7 +76,7 @@ type UsernameFieldProps = {
 function UsernameField(props: UsernameFieldProps) {
   const { username, set_username, error } = props;
   return (
-    <TextField
+    <MuiTextField
       type="text"
       name="username"
       autoComplete="current-username"
@@ -84,6 +96,7 @@ type sign_in_props = {
   auth_state: auth_state;
   set_sign_up: (sign_up: boolean) => void;
   do_sign_in: (credentials: { username: string; password: string }) => void;
+  C: Context;
 };
 
 type sign_up_props = {
@@ -107,7 +120,7 @@ export type username_state = {
   error: string | undefined;
 };
 
-type password_state = {
+export type password_state = {
   password: string;
   error: string | undefined;
 };
@@ -132,7 +145,7 @@ export function mkusername(username: string): username_state {
   }
 }
 
-function mkpassword(password: string): password_state {
+export function mkpassword(password: string): password_state {
   if (password === "") return { password: "", error: "Required" };
   if (password.length <= 4) {
     return { password, error: "Password too short!" };
@@ -226,58 +239,112 @@ function SignUpForm({ set_sign_up, do_sign_up, auth_state }: sign_up_props) {
   );
 }
 
-function SignInForm({ set_sign_up, do_sign_in, auth_state }: sign_in_props) {
+function SignInForm({ set_sign_up, do_sign_in, auth_state, C }: sign_in_props) {
   const [username, set_username] = useState<username_state>(mkusername(""));
   const [password, set_password] = useState<password_state>(mkpassword(""));
+  const [message_id, set_message_id] = useState("");
   return (
-    <Form
-      title="Sign In"
-      form={
-        <form>
-          <UsernameField
-            username={username.username}
-            set_username={(username) => set_username(mkusername(username))}
-            error={username.error}
-          />
-          <PasswordField
-            password={password.password}
-            error={password.error}
-            set_password={(password) => set_password(mkpassword(password))}
-          />
-          <Button
-            disabled={
-              !!password.error ||
-              !!username.error ||
-              auth_state.type === "signing_up" ||
-              auth_state.type === "signing_in"
-            }
-            fullWidth
-            color="primary"
-            size="large"
-            onClick={() =>
-              do_sign_in({
-                username: username.username,
-                password: sha256(password.password),
-              })
-            }
-          >
-            Sign In
-          </Button>
-          {auth_state.type === "sign_in_error" && (
-            <>
-              Error signing in. Please check that you typed your email and
-              password correctly.
-            </>
-          )}
-        </form>
-      }
-      footer={
-        <>
-          Not registed?{" "}
-          <Button onClick={() => set_sign_up(true)}>Sign Up</Button>
-        </>
-      }
-    />
+    <>
+      <Form
+        title="Sign In"
+        form={
+          <form>
+            <UsernameField
+              username={username.username}
+              set_username={(username) => set_username(mkusername(username))}
+              error={username.error}
+            />
+            <PasswordField
+              password={password.password}
+              error={password.error}
+              set_password={(password) => set_password(mkpassword(password))}
+            />
+            <Button
+              disabled={
+                !!password.error ||
+                !!username.error ||
+                auth_state.type === "signing_up" ||
+                auth_state.type === "signing_in"
+              }
+              fullWidth
+              color="primary"
+              size="large"
+              onClick={() =>
+                do_sign_in({
+                  username: username.username,
+                  password: sha256(password.password),
+                })
+              }
+            >
+              Sign In
+            </Button>
+            {auth_state.type === "sign_in_error" && (
+              <>
+                Error signing in. Please check that you typed your email and
+                password correctly.
+              </>
+            )}
+          </form>
+        }
+        footer={
+          <>
+            Not registed?{" "}
+            <Button size="small" onClick={() => set_sign_up(true)}>
+              Sign Up
+            </Button>
+            <br />
+            Forgot your password?{" "}
+            <Button
+              size="small"
+              onClick={() => {
+                C.open_dialog({
+                  title: "Reset your password",
+                  body_text:
+                    "Please type youe username or the email you used when you signed up.  We will send you an email with a link to reset your password.",
+                  fields: {
+                    email_or_username: {
+                      value: "",
+                      setter: (value) => {
+                        if (value.length === 0) {
+                          return { error: "Required" };
+                        }
+                        if (value.length < 4) {
+                          return { error: "too short" };
+                        }
+                        return { value };
+                      },
+                      render: ({ value, set_value, error }) => (
+                        <TextField
+                          value={value}
+                          set_value={set_value}
+                          error={error}
+                          label="Username or Email"
+                          editable
+                        />
+                      ),
+                    },
+                  },
+                  submit: ({ email_or_username }) => {
+                    const message_id = uuidv4();
+                    set_message_id(message_id);
+                    return {
+                      type: "request_password_reset_code",
+                      data: {
+                        message_id,
+                        email_or_username,
+                      },
+                    };
+                  },
+                });
+              }}
+            >
+              Reset It
+            </Button>
+          </>
+        }
+      />
+      <MessageDeliveryUI message_id={message_id} C={C} />
+    </>
   );
 }
 
@@ -298,6 +365,7 @@ export function LoginForm({ C }: { C: Context }) {
           set_sign_up={set_sign_up}
           do_sign_in={do_sign_in}
           auth_state={auth_state}
+          C={C}
         />
       )}
     </div>

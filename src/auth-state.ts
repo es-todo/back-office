@@ -13,4 +13,11 @@ export type auth_state =
   | { type: "sign_up_error"; error: string }
   | { type: "authenticated"; user_id: string }
   | { type: "signing_in"; username: string; password: string }
-  | { type: "sign_in_error"; error: string };
+  | { type: "sign_in_error"; error: string }
+  | {
+      type: "resetting_password";
+      command_uuid: string;
+      code: string;
+      password: string;
+      username: string;
+    };

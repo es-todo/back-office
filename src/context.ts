@@ -35,6 +35,11 @@ export type Context = {
   }) => void;
   do_sign_in: (credentials: { username: string; password: string }) => void;
   do_sign_out: () => void;
+  do_reset_password: (args: {
+    username: string;
+    code: string;
+    password: string;
+  }) => void;
   fetch: fetch;
   commands: broker_state["commands"];
   submit_command: (
