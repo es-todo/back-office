@@ -10,18 +10,21 @@ RUN sudo -E bash setup_23.x
 RUN sudo apt-get install nodejs -y
 
 RUN mkdir /app
+RUN mkdir /app/packages
+RUN mkdir /app/packages/spa
 WORKDIR /app
-COPY ./package.json /app
-COPY ./package-lock.json /app
+COPY ./package-lock.json               /app
+COPY ./package.json                    /app
+COPY ./packages/spa/package.json       /app/packages/spa
 RUN npm ci
-COPY ./eslint.config.js /app
-COPY ./tsconfig.app.json /app
-COPY ./tsconfig.json /app
-COPY ./tsconfig.node.json /app
-COPY ./vite.config.ts /app
-COPY ./index.html /app
-COPY ./public /app/public
-COPY ./src /app/src
+COPY ./packages/spa/eslint.config.js   /app/packages/spa
+COPY ./packages/spa/tsconfig.json      /app/packages/spa
+COPY ./packages/spa/tsconfig.app.json  /app/packages/spa
+COPY ./packages/spa/tsconfig.node.json /app/packages/spa
+COPY ./packages/spa/vite.config.ts     /app/packages/spa
+COPY ./packages/spa/index.html         /app/packages/spa
+COPY ./packages/spa/public             /app/packages/spa/public
+COPY ./packages/spa/src                /app/packages/spa/src
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
