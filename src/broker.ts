@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { assert } from "./assert";
 import { type auth_state } from "./auth-state";
 
-export type credentials = { username: string; password: string };
+export type credentials =
+  | { username: string; password: string }
+  | { user_id: string; password: string };
 
 type signup_params = {
   email: string;
@@ -70,7 +72,7 @@ type message =
       user_id: string;
       command_uuid: string;
     }
-  | { type: "sign_in"; username: string; password: string }
+  | ({ type: "sign_in" } & credentials)
   | { type: "sign_out" }
   | {
       type: "reset_password";
@@ -83,9 +85,11 @@ type message =
 type broker_constructor_params = {
   url: string;
   set_state: (state: broker_state) => void;
-  set_credentials: (credentials: credentials | undefined) => void;
+  set_credentials: (credentials: saved_credentials | undefined) => void;
   get_credentials: () => credentials | undefined;
 };
+
+type saved_credentials = { user_id: string; password: string };
 
 export class Broker {
   private url: string;
@@ -98,7 +102,7 @@ export class Broker {
   private state: broker_state = initial_broker_state;
   private on_state_change: (state: broker_state) => void;
   private command_callbacks: { [command_uuid: string]: () => void } = {};
-  private set_credentials: (credentials: credentials | undefined) => void;
+  private set_credentials: (credentials: saved_credentials | undefined) => void;
   private get_credentials: () => credentials | undefined;
 
   constructor({
@@ -274,15 +278,15 @@ export class Broker {
           }
           case "auth": {
             const auth_state = this.state.auth_state;
+            const { user_id } = message as { user_id: string };
             switch (auth_state.type) {
               case "signing_up":
               case "signing_in":
               case "resetting_password": {
-                const { username, password } = auth_state;
-                this.set_credentials({ username, password });
+                const { password } = auth_state;
+                this.set_credentials({ user_id, password });
               }
             }
-            const { user_id } = message as { user_id: string };
             this.update_state({
               ...this.state,
               auth_state: { type: "authenticated", user_id },
@@ -440,14 +444,13 @@ export class Broker {
     });
   }
 
-  public do_sign_in({ username, password }: credentials) {
-    this.send({ type: "sign_in", username, password });
+  public do_sign_in(credentials: credentials) {
+    this.send({ type: "sign_in", ...credentials });
     this.update_state({
       ...this.state,
       auth_state: {
         type: "signing_in",
-        username,
-        password,
+        password: credentials.password,
       },
     });
   }

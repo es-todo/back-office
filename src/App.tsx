@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Broker, credentials, initial_broker_state } from "./broker.ts";
+import { Broker, initial_broker_state } from "./broker.ts";
 import { TitleBar } from "./title-bar.tsx";
 import { SideDrawer } from "./side-drawer.tsx";
 import { Router } from "./router.tsx";
@@ -21,21 +21,26 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
+type credentials = { user_id: string; password: string };
 function set_credentials(credentials: credentials | undefined) {
   if (credentials) {
-    const { username, password } = credentials;
-    localStorage.setItem("username", username);
+    const { user_id, password } = credentials;
+    localStorage.setItem("user_id", user_id);
     localStorage.setItem("password", password);
   } else {
-    localStorage.removeItem("username");
+    localStorage.removeItem("user_id");
     localStorage.removeItem("password");
   }
 }
 
 function get_credentials() {
+  const user_id = localStorage.getItem("user_id");
   const username = localStorage.getItem("username");
   const password = localStorage.getItem("password");
-  if (username && password) {
+  if (user_id && password) {
+    if (username) localStorage.removeItem("username");
+    return { user_id, password };
+  } else if (username && password) {
     return { username, password };
   } else {
     return undefined;
