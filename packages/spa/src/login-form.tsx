@@ -47,7 +47,7 @@ type EmailFieldProps = {
   error: string | undefined;
 };
 
-function EmailField(props: EmailFieldProps) {
+export function EmailField(props: EmailFieldProps) {
   const { email, set_email, error } = props;
   return (
     <MuiTextField
@@ -105,7 +105,7 @@ type sign_up_props = {
   C: Context;
 };
 
-type email_state = {
+export type email_state = {
   email: string;
   error: string | undefined;
 };
@@ -120,7 +120,7 @@ export type password_state = {
   error: string | undefined;
 };
 
-function mkemail(email: string): email_state {
+export function mkemail(email: string): email_state {
   email = email.toLowerCase();
   if (email === "") return { email: "", error: "Required" };
   if (email_valid(email)) {

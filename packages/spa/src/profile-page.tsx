@@ -1,10 +1,11 @@
 import { Button } from "@mui/material";
 import { Context } from "./context";
-import { LoginForm } from "./login-form";
+import { LoginForm, mkemail } from "./login-form";
 import { Spinner } from "./spinner";
 import { Heading } from "./heading";
 import { UpdateRealNameForm } from "./update-real-name-form";
 import { TextField } from "./text-field";
+import { uuidv4 } from "./uuidv4";
 
 export function ProfilePageContentForUser({
   C,
@@ -62,6 +63,48 @@ export function ProfilePageContentForUser({
           }
         >
           Update Username
+        </Button>
+        <Button
+          onClick={() =>
+            C.open_dialog({
+              title: "Change Email",
+              body_text: "Change the email associated with your account.",
+              fields: {
+                email: {
+                  value: "",
+                  setter: (value) => {
+                    const x = mkemail(value);
+                    if (x.error) {
+                      return { error: x.error };
+                    } else {
+                      return { value: x.email };
+                    }
+                  },
+                  render: ({ value, set_value, error }) => (
+                    <TextField
+                      editable={true}
+                      value={value}
+                      set_value={set_value}
+                      error={error}
+                      required
+                      label="Email:"
+                    />
+                  ),
+                },
+              },
+              submit: ({ email }) => ({
+                type: "change_email",
+                data: {
+                  user_id,
+                  new_email: email,
+                  new_email_message_id: uuidv4(),
+                  old_email_message_id: uuidv4(),
+                },
+              }),
+            })
+          }
+        >
+          Change Email
         </Button>
         <Button
           onClick={() =>
