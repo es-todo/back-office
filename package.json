@@ -19,7 +19,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "preview": "cd packages/spa && npm exec vite",
+    "build": "npm run --workspace=spa build",
+    "serve": "npm run --workspace=ssr serve",
+    "preview": "npm run --workspace=spa preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
