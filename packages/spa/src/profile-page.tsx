@@ -63,15 +63,39 @@ export function ProfilePageContentForUser({
         >
           Update Username
         </Button>
+        <Button
+          onClick={() =>
+            C.open_dialog({
+              title: "Update Real Name",
+              body_text: "Change your name to be more like who you are.",
+              fields: {
+                realname: {
+                  value: "",
+                  setter: (value) => {
+                    return { error: undefined, value };
+                  },
+                  render: ({ value, set_value, error }) => (
+                    <TextField
+                      editable={true}
+                      value={value}
+                      set_value={set_value}
+                      error={error}
+                      required={false}
+                      label="Real Name:"
+                    />
+                  ),
+                },
+              },
+              submit: ({ realname }) => ({
+                type: "change_realname",
+                data: { user_id, new_realname: realname.trim() },
+              }),
+            })
+          }
+        >
+          Update Real Name
+        </Button>
       </div>
-
-      <UpdateRealNameForm
-        key={user.realname}
-        user_id={user_id}
-        realname={user.realname}
-        C={C}
-      />
-      <h2>Change your username:</h2>
     </>
   ) : (
     <>
