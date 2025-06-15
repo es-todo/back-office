@@ -1,16 +1,11 @@
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Paper,
-} from "@mui/material";
+import { Button, Checkbox, FormControlLabel, Paper } from "@mui/material";
 import { Context } from "./context";
 import { Spinner } from "./spinner";
 import { TextField } from "./text-field";
 import { useState } from "react";
 import { CommandForm, FormComponent } from "./command-form";
 import { Restricted, role } from "./restricted";
+import { UserAvatar } from "./user-avatar";
 
 type InternalAdminPageProps = {
   C: Context;
@@ -91,38 +86,6 @@ type SmallUserProfileProps = {
   C: Context;
 };
 
-// from https://mui.com/material-ui/react-avatar/
-function stringToColor(string: string) {
-  let hash = 0;
-  let i;
-
-  /* eslint-disable no-bitwise */
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  let color = "#";
-
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  /* eslint-enable no-bitwise */
-
-  return color;
-}
-
-// from https://mui.com/material-ui/react-avatar/
-function stringAvatar(name: string) {
-  name = name.toUpperCase();
-  return {
-    sx: {
-      bgcolor: stringToColor(name),
-    },
-    children: name.slice(0, 2),
-  };
-}
-
 function UserProfileDetails({ user_id, C }: SmallUserProfileProps) {
   return (
     <>
@@ -148,7 +111,7 @@ function SmallUserProfile({ user_id, C }: SmallUserProfileProps) {
           borderRadius: "4px",
         }}
       >
-        <Avatar {...stringAvatar(user.username || user.realname || "?")} />
+        <UserAvatar user_id={user_id} size={80} C={C} />
         <div>
           Username: <span style={{ fontWeight: "bold" }}>@{user.username}</span>
         </div>

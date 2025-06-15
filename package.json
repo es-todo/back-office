@@ -25,6 +25,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "distinct-colors": "^3.0.0",
     "react-easy-crop": "^5.4.2"
   }
 }

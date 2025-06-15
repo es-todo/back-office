@@ -1,11 +1,17 @@
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import { Context } from "./context";
+import { UserAvatar } from "./user-avatar";
 
-export function TitleBar({ toggle }: { open: boolean; toggle: () => void }) {
+type Props = {
+  toggle: () => void;
+  C: Context;
+};
+
+export function TitleBar({ toggle, C }: Props) {
   return (
     <AppBar
       position="fixed"
@@ -23,9 +29,9 @@ export function TitleBar({ toggle }: { open: boolean; toggle: () => void }) {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          News
+          Welcome
         </Typography>
-        <Button color="inherit">Login</Button>
+        <UserAvatar size={40} user_id={C.user_id} linkto="/profile" C={C} />
       </Toolbar>
     </AppBar>
   );

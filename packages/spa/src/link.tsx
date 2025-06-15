@@ -1,14 +1,17 @@
 import { Link as MuiLink } from "@mui/material";
-import React from "react";
+import { PropsWithChildren } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-export function Link({
-  to,
-  children,
-}: { to: string } & React.PropsWithChildren) {
-  return (
+type Props = {
+  to: string | undefined;
+} & PropsWithChildren;
+
+export function Link({ to, children }: Props) {
+  return to ? (
     <MuiLink to={to} component={RouterLink}>
       {children}
     </MuiLink>
+  ) : (
+    <>{children}</>
   );
 }

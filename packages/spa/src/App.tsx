@@ -179,7 +179,7 @@ export function App() {
       />
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
-        <TitleBar open={open} toggle={() => set_open(!open)} />
+        <TitleBar toggle={() => set_open(!open)} C={C} />
         <SideDrawer open={open} onToggle={() => set_open(!open)} />
         <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
           <DrawerHeader />
