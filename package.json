@@ -23,5 +23,8 @@
     "serve": "npm run --workspace=ssr serve",
     "preview": "npm run --workspace=spa preview",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "react-easy-crop": "^5.4.2"
   }
 }
