@@ -7,7 +7,6 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { Context, Field } from "./context";
-import { JSONBox } from "./json-box";
 import { assert } from "./assert";
 import { command_type } from "schemata/generated/command_type";
 import { command_status_type } from "./broker";
@@ -59,7 +58,7 @@ function DialogBody({
   return (
     <>
       <DialogTitle>{spec.title}</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ gap: 10 }}>
         <DialogContentText style={{ marginBottom: "10px" }}>
           {spec.body_text}
         </DialogContentText>
@@ -112,7 +111,6 @@ export function CommandDialog(props: CommandDialogProps) {
           values={dialog?.values || {}}
           set_values={update}
         />
-        {false && <JSONBox json={dialog?.values} />}
         <DialogActions>
           <Button onClick={cancel}>Cancel</Button>
           <Button

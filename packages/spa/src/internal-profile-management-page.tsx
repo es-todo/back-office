@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Restricted } from "./restricted";
 import { ProfilePageContentForUser } from "./profile-page";
 import { UserAvatar } from "./user-avatar";
+import { CreateNewProfileButton } from "./create-new-profile-button";
 
 const elevation = 10;
 
@@ -33,7 +34,6 @@ function RecentUsers({
                   flexDirection: "row",
                   gap: 5,
                   cursor: user ? "pointer" : undefined,
-                  //justifyItems: "center",
                 }}
                 onClick={user ? () => set_searchstr(user.username) : undefined}
               >
@@ -62,13 +62,26 @@ function SearchUser({ C }: Props) {
   return (
     <>
       <Paper elevation={elevation} style={{ padding: "10px" }}>
-        <h2 style={{ margin: "0px" }}>Update profiles of other users</h2>
-        <TextField
-          value={searchstr}
-          placeholder="find a user by username"
-          editable={true}
-          set_value={set_searchstr}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h2 style={{ margin: "0px" }}>Update profiles of other users</h2>
+            <TextField
+              value={searchstr}
+              placeholder="find a user by username"
+              editable={true}
+              set_value={set_searchstr}
+            />
+          </div>
+          <div>
+            <CreateNewProfileButton C={C} />
+          </div>
+        </div>
         <div>
           {!searchstr ? (
             <RecentUsers set_searchstr={set_searchstr} C={C} />
