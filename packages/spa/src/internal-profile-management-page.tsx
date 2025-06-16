@@ -5,14 +5,58 @@ import { TextField } from "./text-field";
 import { useState } from "react";
 import { Restricted } from "./restricted";
 import { ProfilePageContentForUser } from "./profile-page";
+import { UserAvatar } from "./user-avatar";
 
 const elevation = 10;
 
-type SearchUserProps = {
+function RecentUsers({
+  set_searchstr,
+  C,
+}: {
+  set_searchstr: (string: string) => void;
   C: Context;
-};
+}) {
+  const list = C.fetch("users_list", "recent");
+  return (
+    <>
+      <h2>Recent Users</h2>
+      <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+        {list &&
+          list.user_ids.map((user_id) => {
+            const user = C.fetch("user", user_id);
+            return (
+              <div
+                key={user_id}
+                style={{
+                  margin: 10,
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 5,
+                  cursor: user ? "pointer" : undefined,
+                  //justifyItems: "center",
+                }}
+                onClick={user ? () => set_searchstr(user.username) : undefined}
+              >
+                <UserAvatar user_id={user_id} size={45} C={C} />
+                {user ? (
+                  <div style={{ alignContent: "center" }}>
+                    <div>@{user.username}</div>
+                    <div>{user.email}</div>
+                  </div>
+                ) : (
+                  <>...</>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    </>
+  );
+}
 
-function SearchUser({ C }: SearchUserProps) {
+type Props = { C: Context };
+
+function SearchUser({ C }: Props) {
   const [searchstr, set_searchstr] = useState("");
   const user = C.fetch("username_redirect", searchstr);
   return (
@@ -25,31 +69,35 @@ function SearchUser({ C }: SearchUserProps) {
           editable={true}
           set_value={set_searchstr}
         />
-        {user === undefined ? (
-          <Spinner />
-        ) : user === null ? (
-          <>No exact match for @{searchstr}</>
-        ) : (
-          <div>
-            <div style={{ fontFamily: "monospace", fontSize: "small" }}>
-              UUID: {user.user_id}
+        <div>
+          {!searchstr ? (
+            <RecentUsers set_searchstr={set_searchstr} C={C} />
+          ) : user === undefined ? (
+            <Spinner />
+          ) : user === null ? (
+            <>No exact match for @{searchstr}</>
+          ) : (
+            <div>
+              <div style={{ fontFamily: "monospace", fontSize: "small" }}>
+                UUID: {user.user_id}
+              </div>
+              <div
+                style={{
+                  backgroundColor: "red",
+                  color: "white",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
+                User profile follows. Proceed with caution and don't change
+                things you don't need to change. This is a privileged
+                functionality and is monitored and logged.
+                <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
+              </div>
             </div>
-            <div
-              style={{
-                backgroundColor: "red",
-                color: "white",
-                fontWeight: "bold",
-                textAlign: "center",
-              }}
-            >
-              <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
-              User profile follows. Proceed with caution and don't change things
-              you don't need to change. This is a privileged functionality and
-              is monitored and logged.
-              <span style={{ fontSize: "2em" }}>✋🛑⛔️</span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </Paper>
       {user && (
         <Paper>
