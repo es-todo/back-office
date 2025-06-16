@@ -13,6 +13,10 @@ import {
 } from "./update-profile-picture-dialog";
 import { UserAvatar } from "./user-avatar";
 import { UploadFileButton } from "./upload-file-button";
+import LogoutIcon from "@mui/icons-material/Logout";
+import EmailIcon from "@mui/icons-material/Email";
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import ContactPageIcon from "@mui/icons-material/ContactPage";
 
 type Props = {
   user_id: string;
@@ -47,6 +51,7 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
         }}
       >
         <Button
+          startIcon={<AlternateEmailIcon />}
           onClick={() =>
             C.open_dialog({
               title: "Change Username",
@@ -83,6 +88,7 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
           Update Username
         </Button>
         <Button
+          startIcon={<EmailIcon />}
           onClick={() =>
             C.open_dialog({
               title: "Change Email",
@@ -125,6 +131,7 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
           Change Email
         </Button>
         <Button
+          startIcon={<ContactPageIcon />}
           onClick={() =>
             C.open_dialog({
               title: "Update Real Name",
@@ -162,6 +169,13 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
           capture={undefined}
           label="Upload Profile Photo"
         />
+        <Button
+          startIcon={<LogoutIcon />}
+          disabled={C.auth_state.type === "signing_out"}
+          onClick={C.do_sign_out}
+        >
+          SIGN OUT
+        </Button>
       </div>
     </>
   ) : (
@@ -185,15 +199,6 @@ export function ProfilePage({ C }: { C: Context }) {
     <>
       <Heading level={1}>Profile</Heading>
       <ProfilePageContent C={C} />
-      {C.user_id && (
-        <Button
-          disabled={C.auth_state.type === "signing_out"}
-          onClick={C.do_sign_out}
-        >
-          SIGN OUT
-        </Button>
-      )}
-      <p>This is the main profile area.</p>
     </>
   );
 }
