@@ -29,11 +29,11 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
 
   const [image, set_image] = useState<image_state>(undefined);
 
-  return user.realname ? (
+  return user.realname || true ? (
     <>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <UserAvatar user_id={user_id} size={160} C={C} />
-        <h1>Welcome {user.realname} 👋</h1>
+      <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+        <UserAvatar user_id={user_id} size={150} C={C} />
+        <h1>Welcome {user.realname || `@${user.username}`} 👋</h1>
       </div>
       <UpdateProfilePictureModalDialog
         user_id={user_id}
@@ -177,13 +177,14 @@ export function ProfilePageContentForUser({ C, user_id }: Props) {
           SIGN OUT
         </Button>
       </div>
+      {!user.realname && (
+        <>
+          <h1>Let us know who you are.</h1>
+          <UpdateRealNameForm key="" user_id={user_id} realname="" C={C} />
+        </>
+      )}
     </>
-  ) : (
-    <>
-      <h1>Let us know who you are.</h1>
-      <UpdateRealNameForm key="" user_id={user_id} realname="" C={C} />
-    </>
-  );
+  ) : null;
 }
 
 function ProfilePageContent({ C }: { C: Context }) {
