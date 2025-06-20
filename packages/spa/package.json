@@ -13,7 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.2.6",
-    "@mui/icons-material": "^7.1.1",
+    "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.1",
     "email-validator": "^2.0.4",
     "engine.io-client": "^6.6.3",
@@ -27,16 +27,16 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.28.0",
-    "@types/react": "^19.1.6",
+    "@eslint/js": "^9.29.0",
+    "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.5.1",
-    "eslint": "^9.28.0",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.34.0",
+    "typescript-eslint": "^8.34.1",
     "vite": "^6.2.0",
     "vite-plugin-checker": "^0.9.3"
   }
